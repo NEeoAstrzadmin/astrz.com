@@ -27,11 +27,11 @@ export default function Home() {
               Players are categorized into rank groups according to their combat prowess and achievements in the game.
             </p>
             <div className="flex flex-wrap gap-3 mt-4">
-              <div className="px-3 py-1 bg-[#FF6B6B] bg-opacity-20 text-[#FF6B6B] rounded-full text-sm font-medium">Elite: 880+ points</div>
-              <div className="px-3 py-1 bg-[#FFD166] bg-opacity-20 text-[#FFD166] rounded-full text-sm font-medium">Master: 820-879 points</div>
-              <div className="px-3 py-1 bg-[#06D6A0] bg-opacity-20 text-[#06D6A0] rounded-full text-sm font-medium">Expert: 770-819 points</div>
-              <div className="px-3 py-1 bg-[#118AB2] bg-opacity-20 text-[#118AB2] rounded-full text-sm font-medium">Skilled: 700-769 points</div>
-              <div className="px-3 py-1 bg-[#7678ED] bg-opacity-20 text-[#7678ED] rounded-full text-sm font-medium">Trainee: Below 700 points</div>
+              <div className="px-3 py-1 bg-[#FF6B6B] bg-opacity-20 text-[#FF6B6B] rounded-full text-sm font-medium">S Tier: 880+ points</div>
+              <div className="px-3 py-1 bg-[#FFD166] bg-opacity-20 text-[#FFD166] rounded-full text-sm font-medium">A Tier: 820-879 points</div>
+              <div className="px-3 py-1 bg-[#06D6A0] bg-opacity-20 text-[#06D6A0] rounded-full text-sm font-medium">B Tier: 770-819 points</div>
+              <div className="px-3 py-1 bg-[#118AB2] bg-opacity-20 text-[#118AB2] rounded-full text-sm font-medium">C Tier: 700-769 points</div>
+              <div className="px-3 py-1 bg-[#7678ED] bg-opacity-20 text-[#7678ED] rounded-full text-sm font-medium">D Tier: Below 700 points</div>
             </div>
           </div>
         </section>

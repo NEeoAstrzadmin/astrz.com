@@ -16,20 +16,20 @@ interface TierListProps {
 
 export default function TierList({ players }: TierListProps) {
   const [tierVisibility, setTierVisibility] = useState<Record<string, boolean>>({
-    Elite: false,
-    Master: false,
-    Expert: false,
-    Skilled: false,
-    Trainee: false
+    S: false,
+    A: false,
+    B: false,
+    C: false,
+    D: false
   });
 
   // Define tier configurations
   const tiers: TierConfig[] = [
-    { name: "Elite", title: "Elite", color: "#FF6B6B", minPoints: 880 },
-    { name: "Master", title: "Master", color: "#FFD166", minPoints: 820, maxPoints: 879 },
-    { name: "Expert", title: "Expert", color: "#06D6A0", minPoints: 770, maxPoints: 819 },
-    { name: "Skilled", title: "Skilled", color: "#118AB2", minPoints: 700, maxPoints: 769 },
-    { name: "Trainee", title: "Trainee", color: "#7678ED", maxPoints: 699 }
+    { name: "S", title: "S Tier", color: "#FF6B6B", minPoints: 880 },
+    { name: "A", title: "A Tier", color: "#FFD166", minPoints: 820, maxPoints: 879 },
+    { name: "B", title: "B Tier", color: "#06D6A0", minPoints: 770, maxPoints: 819 },
+    { name: "C", title: "C Tier", color: "#118AB2", minPoints: 700, maxPoints: 769 },
+    { name: "D", title: "D Tier", color: "#7678ED", maxPoints: 699 }
   ];
 
   // Filter players by tier
@@ -69,15 +69,17 @@ export default function TierList({ players }: TierListProps) {
             key={tier.name}
             className={`tier-card tier-${tier.name.toLowerCase()} transition-opacity duration-500 ${
               tierVisibility[tier.name] ? 'opacity-100' : 'opacity-0'
-            }`}
+            } mb-8 bg-gray-900 rounded-lg overflow-hidden border border-gray-800`}
             style={{ transform: tierVisibility[tier.name] ? 'translateY(0)' : 'translateY(10px)' }}
           >
-            <div className="flex items-center mb-3 flex-wrap">
+            <div 
+              className="flex items-center py-3 px-4 border-b border-gray-800" 
+              style={{ backgroundColor: `${tier.color}15` }}>
               <div 
                 className="w-12 h-12 flex items-center justify-center rounded-lg mr-4"
                 style={{ backgroundColor: tier.color }}
               >
-                <span className="text-sm font-bold text-white">{tier.name.charAt(0)}</span>
+                <span className="text-xl font-bold text-white">{tier.name}</span>
               </div>
               <h2 className="text-xl md:text-2xl font-bold">{tier.title}</h2>
               <div 
@@ -95,7 +97,7 @@ export default function TierList({ players }: TierListProps) {
               </div>
             </div>
             
-            <div className="tier-row overflow-x-auto pb-4 flex space-x-4 scrollbar-thin">
+            <div className="tier-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
               {playersInTier.map((player) => (
                 <PlayerCard 
                   key={player.rank} 
