@@ -16,20 +16,20 @@ interface TierListProps {
 
 export default function TierList({ players }: TierListProps) {
   const [tierVisibility, setTierVisibility] = useState<Record<string, boolean>>({
-    S: false,
-    A: false,
-    B: false,
-    C: false,
-    D: false
+    Elite: false,
+    Master: false,
+    Expert: false,
+    Skilled: false,
+    Trainee: false
   });
 
   // Define tier configurations
   const tiers: TierConfig[] = [
-    { name: "S", title: "S Tier", color: "#FF6B6B", minPoints: 880 },
-    { name: "A", title: "A Tier", color: "#FFD166", minPoints: 820, maxPoints: 879 },
-    { name: "B", title: "B Tier", color: "#06D6A0", minPoints: 770, maxPoints: 819 },
-    { name: "C", title: "C Tier", color: "#118AB2", minPoints: 700, maxPoints: 769 },
-    { name: "D", title: "D Tier", color: "#7678ED", maxPoints: 699 }
+    { name: "Elite", title: "Elite", color: "#FF6B6B", minPoints: 880 },
+    { name: "Master", title: "Master", color: "#FFD166", minPoints: 820, maxPoints: 879 },
+    { name: "Expert", title: "Expert", color: "#06D6A0", minPoints: 770, maxPoints: 819 },
+    { name: "Skilled", title: "Skilled", color: "#118AB2", minPoints: 700, maxPoints: 769 },
+    { name: "Trainee", title: "Trainee", color: "#7678ED", maxPoints: 699 }
   ];
 
   // Filter players by tier
@@ -77,7 +77,7 @@ export default function TierList({ players }: TierListProps) {
                 className="w-12 h-12 flex items-center justify-center rounded-lg mr-4"
                 style={{ backgroundColor: tier.color }}
               >
-                <span className="text-2xl font-bold text-white">{tier.name}</span>
+                <span className="text-sm font-bold text-white">{tier.name.charAt(0)}</span>
               </div>
               <h2 className="text-xl md:text-2xl font-bold">{tier.title}</h2>
               <div 
