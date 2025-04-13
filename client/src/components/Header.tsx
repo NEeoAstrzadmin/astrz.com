@@ -19,9 +19,9 @@ export default function Header({ searchTerm, setSearchTerm }: HeaderProps) {
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-300 to-purple-500 inline-block text-transparent bg-clip-text">
-                Astrz Combat
+                Monthly Rankings
               </h1>
-              <p className="text-purple-300 text-sm font-medium">Official Rankings</p>
+              <p className="text-purple-300 text-sm font-medium">Competitive Combat</p>
             </div>
           </div>
           <button 

@@ -50,7 +50,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
             <span className="text-purple-400 mr-2">
               <FaCrown />
             </span>
-            Astrz Combat Leaderboard
+            Monthly Competitive Combat Rankings
           </h2>
         </div>
         

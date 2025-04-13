@@ -21,10 +21,10 @@ export default function Home() {
         {/* Game description */}
         <section className="mb-8">
           <div className="bg-gray-900/60 rounded-lg p-6 border border-purple-900/40 shadow-lg">
-            <h2 className="text-xl font-bold mb-3 text-purple-300">Welcome to Astrz Combat Rankings</h2>
+            <h2 className="text-xl font-bold mb-3 text-purple-300">Monthly Competitive Combat Rankings</h2>
             <p className="text-gray-300">
-              This leaderboard showcases the top 30 players in Astrz Combat based on their performance points.
-              Players are ranked according to their combat prowess, with the top performers receiving special recognition.
+              This leaderboard showcases the top 30 players in the monthly combat tournament based on their performance points.
+              Players are ranked according to their skill level, with the top performers receiving special recognition.
             </p>
             <div className="flex flex-wrap gap-3 mt-4">
               <div className="px-3 py-1 bg-yellow-500 bg-opacity-10 text-yellow-500 rounded-full text-sm font-medium border border-yellow-500/20">
