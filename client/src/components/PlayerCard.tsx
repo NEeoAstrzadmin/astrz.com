@@ -21,7 +21,7 @@ export default function PlayerCard({ player, tierColor }: PlayerCardProps) {
   };
 
   return (
-    <div className="player-card bg-gray-800 rounded-md border border-gray-700 overflow-hidden transition-all duration-200 hover:bg-gray-750 hover:scale-105 hover:shadow-md">
+    <div className="player-card bg-gray-800 rounded-md border border-gray-700 overflow-hidden transition-colors duration-200 hover:bg-gray-750">
       <div className="p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
