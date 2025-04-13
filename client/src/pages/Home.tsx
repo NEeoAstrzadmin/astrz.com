@@ -52,13 +52,19 @@ export default function Home() {
             </div>
             
             <div className="flex flex-wrap gap-3 mt-6">
-              <div className="px-3 py-1 bg-yellow-500 bg-opacity-10 text-yellow-500 rounded-full text-sm font-medium border border-yellow-500/20">
-                Top 3 Players - Crown Recognition
+              <div className="px-3 py-1 bg-[#FF6B6B] bg-opacity-10 text-[#FF6B6B] rounded-full text-sm font-medium border border-[#FF6B6B]/20 hover:scale-105 transition-transform">
+                Astrz Prime (250+ pts)
               </div>
-              <div className="px-3 py-1 bg-purple-500 bg-opacity-10 text-purple-400 rounded-full text-sm font-medium border border-purple-500/20">
-                Top 10 Players - Elite Status
+              <div className="px-3 py-1 bg-[#4D96FF] bg-opacity-10 text-[#4D96FF] rounded-full text-sm font-medium border border-[#4D96FF]/20 hover:scale-105 transition-transform">
+                Astrz Vanguard (180+ pts)
               </div>
-              <div className="px-3 py-1 bg-blue-500 bg-opacity-10 text-blue-400 rounded-full text-sm font-medium border border-blue-500/20">
+              <div className="px-3 py-1 bg-[#9FE6A0] bg-opacity-10 text-[#9FE6A0] rounded-full text-sm font-medium border border-[#9FE6A0]/20 hover:scale-105 transition-transform">
+                Astrz Challenger (100+ pts)
+              </div>
+              <div className="px-3 py-1 bg-[#FFBD35] bg-opacity-10 text-[#FFBD35] rounded-full text-sm font-medium border border-[#FFBD35]/20 hover:scale-105 transition-transform">
+                Astrz Edge (below 100 pts)
+              </div>
+              <div className="px-3 py-1 bg-blue-500 bg-opacity-10 text-blue-400 rounded-full text-sm font-medium border border-blue-500/20 hover:scale-105 transition-transform animate-pulse">
                 Click on player names to see recent duel history
               </div>
             </div>

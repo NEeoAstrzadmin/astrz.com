@@ -113,10 +113,10 @@ export default function Leaderboard({ players }: LeaderboardProps) {
 
   return (
     <section id="leaderboard" className="space-y-6 relative">
-      <div className="bg-gray-900/60 border border-purple-900/50 rounded-lg overflow-hidden shadow-xl">
+      <div className="bg-gray-900/60 border border-purple-900/50 rounded-lg overflow-hidden shadow-xl animate-glow">
         <div className="bg-purple-900/30 border-b border-purple-900/50 py-4 px-6">
           <h2 className="text-2xl font-bold text-white flex items-center">
-            <span className="text-purple-400 mr-2">
+            <span className="text-purple-400 mr-2 animate-bounce">
               <FaCrown />
             </span>
             Astrz Rankings
@@ -131,11 +131,11 @@ export default function Leaderboard({ players }: LeaderboardProps) {
         </div>
         
         {/* Rank Tiers Legend */}
-        <div className="flex flex-wrap justify-between p-3 border-b border-gray-800 gap-2">
+        <div className="flex flex-wrap justify-between p-3 border-b border-gray-800 gap-2 animate-shimmer">
           {rankTiers.map((tier, index) => (
             <div 
               key={index}
-              className="flex items-center"
+              className="flex items-center hover:scale-110 transition-transform"
               style={{ color: tier.color }}
             >
               <div 
@@ -159,7 +159,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                 key={player.rank} 
                 className={`grid grid-cols-12 py-3 px-4 items-center transition-all duration-300 ${
                   rowVisibility[player.rank] ? 'opacity-100' : 'opacity-0'
-                } ${isTopThree ? 'bg-gray-800/40 hover:bg-gray-800/60' : 'hover:bg-gray-900/70'}`}
+                } ${isTopThree ? 'bg-gray-800/40 hover:bg-gray-800/60' : 'hover:bg-gray-900/70'} hover:translate-x-1 transition-transform`}
                 style={{ 
                   transform: rowVisibility[player.rank] ? 'translateY(0)' : 'translateY(5px)',
                   borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined
@@ -183,11 +183,14 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                   <div 
                     className={`mr-2 text-xs font-bold px-2 py-0.5 rounded-md transition-all duration-500 whitespace-nowrap overflow-hidden ${
                       animatedRanks[player.rank] ? 'max-w-[120px] opacity-100' : 'max-w-0 opacity-0'
+                    } ${
+                      player.rank % 2 === 0 ? 'animate-pulse' : ''
                     }`}
                     style={{ 
                       backgroundColor: playerTier.backgroundColor,
                       color: playerTier.color,
-                      borderLeft: `2px solid ${playerTier.color}`
+                      borderLeft: `2px solid ${playerTier.color}`,
+                      boxShadow: `0 0 8px ${playerTier.color}30`
                     }}
                   >
                     {playerTier.name}
@@ -229,8 +232,11 @@ export default function Leaderboard({ players }: LeaderboardProps) {
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center">
                 <div 
-                  className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
-                  style={{ backgroundColor: selectedPlayer.rank <= 3 ? `${getCrownColor(selectedPlayer.rank)}20` : 'rgba(139, 92, 246, 0.2)' }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center mr-3 animate-bounce"
+                  style={{ 
+                    backgroundColor: selectedPlayer.rank <= 3 ? `${getCrownColor(selectedPlayer.rank)}20` : 'rgba(139, 92, 246, 0.2)',
+                    boxShadow: selectedPlayer.rank <= 3 ? `0 0 10px ${getCrownColor(selectedPlayer.rank)}80` : '0 0 10px rgba(139, 92, 246, 0.5)'
+                  }}
                 >
                   {selectedPlayer.rank <= 3 ? (
                     <FaCrown style={{ color: getCrownColor(selectedPlayer.rank) }} />
