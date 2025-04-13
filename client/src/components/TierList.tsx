@@ -1,114 +1,112 @@
 import { useEffect, useState } from "react";
 import PlayerCard from "./PlayerCard";
 import { Player } from "@/data/players";
+import { FaCrown } from "react-icons/fa";
 
-interface TierConfig {
-  name: string;
-  title: string;
-  color: string;
-  minPoints?: number;
-  maxPoints?: number;
-}
-
-interface TierListProps {
+interface LeaderboardProps {
   players: Player[];
 }
 
-export default function TierList({ players }: TierListProps) {
-  const [tierVisibility, setTierVisibility] = useState<Record<string, boolean>>({
-    S: false,
-    A: false,
-    B: false,
-    C: false,
-    D: false
-  });
+export default function Leaderboard({ players }: LeaderboardProps) {
+  const [rowVisibility, setRowVisibility] = useState<Record<number, boolean>>({});
 
-  // Define tier configurations
-  const tiers: TierConfig[] = [
-    { name: "S", title: "S Tier", color: "#FF6B6B", minPoints: 880 },
-    { name: "A", title: "A Tier", color: "#FFD166", minPoints: 820, maxPoints: 879 },
-    { name: "B", title: "B Tier", color: "#06D6A0", minPoints: 770, maxPoints: 819 },
-    { name: "C", title: "C Tier", color: "#118AB2", minPoints: 700, maxPoints: 769 },
-    { name: "D", title: "D Tier", color: "#7678ED", maxPoints: 699 }
-  ];
-
-  // Filter players by tier
-  const getPlayersInTier = (tier: TierConfig) => {
-    return players.filter(player => {
-      if (tier.minPoints && tier.maxPoints) {
-        return player.points >= tier.minPoints && player.points <= tier.maxPoints;
-      } else if (tier.minPoints) {
-        return player.points >= tier.minPoints;
-      } else if (tier.maxPoints) {
-        return player.points <= tier.maxPoints;
-      }
-      return false;
-    });
+  // Colors for the leaderboard
+  const purpleAccent = "hsl(265 91% 58%)";
+  const goldColor = "#FFD700";
+  const silverColor = "#C0C0C0";
+  const bronzeColor = "#CD7F32";
+  
+  // Get crown color based on rank
+  const getCrownColor = (rank: number) => {
+    if (rank === 1) return goldColor;
+    if (rank === 2) return silverColor;
+    if (rank === 3) return bronzeColor;
+    return "";
   };
 
-  // Animate tiers with staggered delay
+  // Animate rows with staggered delay
   useEffect(() => {
-    tiers.forEach((tier, index) => {
+    // Sort players by rank for proper animation
+    const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
+    
+    sortedPlayers.forEach((player, index) => {
       setTimeout(() => {
-        setTierVisibility(prev => ({
+        setRowVisibility(prev => ({
           ...prev,
-          [tier.name]: true
+          [player.rank]: true
         }));
-      }, index * 150);
+      }, index * 50); // Faster animation
     });
-  }, []);
+  }, [players]);
+
+  // Sort players by rank
+  const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
 
   return (
-    <section id="tierList" className="space-y-8">
-      {tiers.map((tier) => {
-        const playersInTier = getPlayersInTier(tier);
-        if (playersInTier.length === 0) return null;
-
-        return (
-          <div
-            key={tier.name}
-            className={`tier-card tier-${tier.name.toLowerCase()} transition-opacity duration-500 ${
-              tierVisibility[tier.name] ? 'opacity-100' : 'opacity-0'
-            } mb-8 bg-gray-900 rounded-lg overflow-hidden border border-gray-800`}
-            style={{ transform: tierVisibility[tier.name] ? 'translateY(0)' : 'translateY(10px)' }}
-          >
-            <div 
-              className="flex items-center py-3 px-4 border-b border-gray-800" 
-              style={{ backgroundColor: `${tier.color}15` }}>
+    <section id="leaderboard" className="space-y-6">
+      <div className="bg-gray-900/60 border border-purple-900/50 rounded-lg overflow-hidden shadow-xl">
+        <div className="bg-purple-900/30 border-b border-purple-900/50 py-4 px-6">
+          <h2 className="text-2xl font-bold text-white flex items-center">
+            <span className="text-purple-400 mr-2">
+              <FaCrown />
+            </span>
+            Astrz Combat Leaderboard
+          </h2>
+        </div>
+        
+        {/* Table Header */}
+        <div className="grid grid-cols-12 py-3 px-4 border-b border-gray-800 bg-gray-800/50 text-sm font-medium text-gray-400">
+          <div className="col-span-1">RANK</div>
+          <div className="col-span-7">PLAYER</div>
+          <div className="col-span-4 text-right">POINTS</div>
+        </div>
+        
+        {/* Player Rows */}
+        <div className="divide-y divide-gray-800/60">
+          {sortedPlayers.map((player) => {
+            const isTopThree = player.rank <= 3;
+            const crownColor = getCrownColor(player.rank);
+            
+            return (
               <div 
-                className="w-12 h-12 flex items-center justify-center rounded-lg mr-4"
-                style={{ backgroundColor: tier.color }}
-              >
-                <span className="text-xl font-bold text-white">{tier.name}</span>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold">{tier.title}</h2>
-              <div 
-                className="ml-4 px-3 py-1 rounded-full text-sm"
+                key={player.rank} 
+                className={`grid grid-cols-12 py-3 px-4 items-center transition-all duration-300 ${
+                  rowVisibility[player.rank] ? 'opacity-100' : 'opacity-0'
+                } ${isTopThree ? 'bg-gray-800/40 hover:bg-gray-800/60' : 'hover:bg-gray-900/70'}`}
                 style={{ 
-                  backgroundColor: `${tier.color}20`,
-                  color: tier.color 
+                  transform: rowVisibility[player.rank] ? 'translateY(0)' : 'translateY(5px)',
+                  borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined
                 }}
               >
-                {tier.minPoints && tier.maxPoints
-                  ? `${tier.minPoints}-${tier.maxPoints} points`
-                  : tier.minPoints
-                  ? `${tier.minPoints}+ points`
-                  : `Below ${tier.maxPoints} points`}
+                <div className="col-span-1 font-mono font-semibold flex items-center">
+                  {player.rank <= 3 && (
+                    <FaCrown 
+                      className="mr-1.5 inline" 
+                      style={{ color: crownColor }}
+                      size={player.rank === 1 ? 18 : 14}
+                    />
+                  )}
+                  <span className={player.rank <= 3 ? "hidden md:inline" : ""}>
+                    {player.rank}.
+                  </span>
+                </div>
+                <div className="col-span-7 font-medium text-white">{player.name}</div>
+                <div 
+                  className={`col-span-4 text-right font-mono ${
+                    player.rank === 1 
+                      ? 'text-yellow-400 font-bold' 
+                      : player.rank <= 3 
+                        ? 'text-purple-300 font-semibold' 
+                        : 'text-gray-300'
+                  }`}
+                >
+                  {player.points} pts
+                </div>
               </div>
-            </div>
-            
-            <div className="tier-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
-              {playersInTier.map((player) => (
-                <PlayerCard 
-                  key={player.rank} 
-                  player={player} 
-                  tierColor={tier.color} 
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 }
