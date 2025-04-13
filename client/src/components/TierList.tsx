@@ -7,18 +7,39 @@ interface LeaderboardProps {
   players: Player[];
 }
 
+// Define rank tiers based on points
+interface RankTier {
+  name: string;
+  color: string;
+  minPoints: number;
+  backgroundColor: string;
+}
+
 export default function Leaderboard({ players }: LeaderboardProps) {
   const [rowVisibility, setRowVisibility] = useState<Record<number, boolean>>({});
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [showMatchHistory, setShowMatchHistory] = useState(false);
+  const [animatedRanks, setAnimatedRanks] = useState<Record<number, boolean>>({});
 
   // Colors for the leaderboard
-  const purpleAccent = "hsl(265 91% 58%)";
   const goldColor = "#FFD700";
   const silverColor = "#C0C0C0";
   const bronzeColor = "#CD7F32";
   
-  // Get crown color based on rank
+  // Define rank tiers with color schemes
+  const rankTiers: RankTier[] = [
+    { name: "Astrz Prime", color: "#FF6B6B", minPoints: 250, backgroundColor: "rgba(255, 107, 107, 0.15)" },
+    { name: "Astrz Vanguard", color: "#4D96FF", minPoints: 180, backgroundColor: "rgba(77, 150, 255, 0.15)" },
+    { name: "Astrz Challenger", color: "#9FE6A0", minPoints: 100, backgroundColor: "rgba(159, 230, 160, 0.15)" },
+    { name: "Astrz Edge", color: "#FFBD35", minPoints: 0, backgroundColor: "rgba(255, 189, 53, 0.15)" }
+  ];
+  
+  // Get player's rank tier based on points
+  const getPlayerRankTier = (points: number): RankTier => {
+    return rankTiers.find(tier => points >= tier.minPoints) || rankTiers[rankTiers.length - 1];
+  };
+  
+  // Get crown color based on rank position
   const getCrownColor = (rank: number) => {
     if (rank === 1) return goldColor;
     if (rank === 2) return silverColor;
@@ -62,7 +83,15 @@ export default function Leaderboard({ players }: LeaderboardProps) {
           ...prev,
           [player.rank]: true
         }));
-      }, index * 50); // Faster animation
+        
+        // Animate rank badges after row appears
+        setTimeout(() => {
+          setAnimatedRanks(prev => ({
+            ...prev,
+            [player.rank]: true
+          }));
+        }, 300);
+      }, index * 50);
     });
   }, [players]);
 
@@ -101,11 +130,29 @@ export default function Leaderboard({ players }: LeaderboardProps) {
           <div className="col-span-4 text-right">POINTS</div>
         </div>
         
+        {/* Rank Tiers Legend */}
+        <div className="flex flex-wrap justify-between p-3 border-b border-gray-800 gap-2">
+          {rankTiers.map((tier, index) => (
+            <div 
+              key={index}
+              className="flex items-center"
+              style={{ color: tier.color }}
+            >
+              <div 
+                className="w-3 h-3 rounded-full mr-1"
+                style={{ backgroundColor: tier.color }}
+              ></div>
+              <span className="text-xs font-medium">{tier.name}</span>
+            </div>
+          ))}
+        </div>
+        
         {/* Player Rows */}
         <div className="divide-y divide-gray-800/60">
           {sortedPlayers.map((player) => {
             const isTopThree = player.rank <= 3;
             const crownColor = getCrownColor(player.rank);
+            const playerTier = getPlayerRankTier(player.points);
             
             return (
               <div 
@@ -130,12 +177,31 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                     {player.rank}.
                   </span>
                 </div>
-                <div 
-                  className="col-span-7 font-medium text-white hover:text-purple-300 cursor-pointer transition-colors"
-                  onClick={() => handlePlayerClick(player)}
-                >
-                  {player.name}
+                
+                <div className="col-span-7 flex items-center">
+                  {/* Animated Rank Badge */}
+                  <div 
+                    className={`mr-2 text-xs font-bold px-2 py-0.5 rounded-md transition-all duration-500 whitespace-nowrap overflow-hidden ${
+                      animatedRanks[player.rank] ? 'max-w-[120px] opacity-100' : 'max-w-0 opacity-0'
+                    }`}
+                    style={{ 
+                      backgroundColor: playerTier.backgroundColor,
+                      color: playerTier.color,
+                      borderLeft: `2px solid ${playerTier.color}`
+                    }}
+                  >
+                    {playerTier.name}
+                  </div>
+                  
+                  {/* Player Name */}
+                  <div 
+                    className="font-medium text-white hover:text-purple-300 cursor-pointer transition-colors"
+                    onClick={() => handlePlayerClick(player)}
+                  >
+                    {player.name}
+                  </div>
                 </div>
+                
                 <div 
                   className={`col-span-4 text-right font-mono ${
                     player.rank === 1 
@@ -173,7 +239,18 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">{selectedPlayer.name}</h3>
+                  <h3 className="text-lg font-bold text-white flex items-center">
+                    {selectedPlayer.name}
+                    <span 
+                      className="ml-2 text-xs font-bold px-2 py-0.5 rounded-md whitespace-nowrap"
+                      style={{ 
+                        backgroundColor: getPlayerRankTier(selectedPlayer.points).backgroundColor,
+                        color: getPlayerRankTier(selectedPlayer.points).color
+                      }}
+                    >
+                      {getPlayerRankTier(selectedPlayer.points).name}
+                    </span>
+                  </h3>
                   <div className="flex items-center space-x-2">
                     <span className="text-gray-400 text-sm">Rank: {selectedPlayer.rank}</span>
                     <span className="text-gray-500">•</span>
