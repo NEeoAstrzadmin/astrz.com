@@ -1,0 +1,75 @@
+Awesome, thanks for the data! Here's a **professional prompt** you can use to generate a clean, stylish **tier list website** based on this leaderboard:
+
+---
+
+### 💻 Prompt: Create a Tier List Website for Astrz Combat Leaderboard
+
+**Project Title:**  
+Astrz Combat Tier List Website
+
+**Purpose:**  
+Design a responsive, professional-looking website that visually presents a **tier list** based on player rankings from the **Astrz Combat Leaderboard**. The goal is to showcase the top players in tiers (e.g. S, A, B, C) based on their points.
+
+---
+
+### 🧾 Data Source (Player Rankings)
+
+Use the following leaderboard data:
+
+| Rank | Player      | Points |
+|------|-------------|--------|
+| 1    | Wido        | 902    |
+| 2    | Ellies V    | 872    |
+| 3    | Sycthy      | 867    |
+| 4    | Rexo        | 836    |
+| 5    | Evo         | 812    |
+| 6    | Darky       | 807    |
+| 7    | Blom        | 801    |
+| 8    | Blazo       | 790    |
+| 9    | spectro     | 786    |
+| 10   | Doni        | 777    |
+| ...  | ...         | ...    |
+| 30   | Rutner      | 667    |
+
+---
+
+### 🧱 Site Structure
+
+- **Homepage**  
+  - Title/Header: *Astrz Combat Tier List*
+  - Description section (optional): Short blurb about the leaderboard and game
+  - Main Content: Tier list display
+  
+- **Tier List Display**  
+  Players should be grouped into **tiers** based on points, such as:
+  
+  - **S Tier** (880+ points)  
+  - **A Tier** (820–879)  
+  - **B Tier** (770–819)  
+  - **C Tier** (700–769)  
+  - **D Tier** (Below 700)
+
+  Each tier should be in its own styled section with player names and points.
+
+---
+
+### 🎨 Design Preferences
+
+- **Modern and minimalistic UI**
+- Dark mode with highlight colors (e.g., blue/purple accents)
+- Responsive design (mobile/tablet friendly)
+- Hover effects on player cards (optional)
+- Use player avatars or placeholder icons if available
+
+---
+
+### 🛠️ Technical Requirements
+
+- Built with **HTML, CSS, JavaScript** (or React if using a framework)
+- Player data can be stored in a simple JSON or embedded directly in the code
+- Include search/filter by name (optional)
+- Animated transitions for tier reveal (optional)
+
+---
+
+Let me know if you'd like me to **generate the HTML/CSS/JS code for this**, or want a version that works with a no-code tool like **Framer**, **Wix Studio**, or **Webflow**.
