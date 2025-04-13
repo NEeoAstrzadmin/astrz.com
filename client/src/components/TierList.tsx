@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import PlayerCard from "./PlayerCard";
 import { Player } from "@/data/players";
-import { FaCrown } from "react-icons/fa";
+import { FaCrown, FaTrophy } from "react-icons/fa";
 
 interface LeaderboardProps {
   players: Player[];
@@ -9,6 +9,8 @@ interface LeaderboardProps {
 
 export default function Leaderboard({ players }: LeaderboardProps) {
   const [rowVisibility, setRowVisibility] = useState<Record<number, boolean>>({});
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [showMatchHistory, setShowMatchHistory] = useState(false);
 
   // Colors for the leaderboard
   const purpleAccent = "hsl(265 91% 58%)";
@@ -22,6 +24,31 @@ export default function Leaderboard({ players }: LeaderboardProps) {
     if (rank === 2) return silverColor;
     if (rank === 3) return bronzeColor;
     return "";
+  };
+  
+  // Handle player selection
+  const handlePlayerClick = (player: Player) => {
+    setSelectedPlayer(player);
+    setShowMatchHistory(true);
+  };
+  
+  // Render match history badges
+  const renderMatchHistory = (matches: string = "") => {
+    return matches.split('').map((result, index) => {
+      const isWin = result === 'W';
+      return (
+        <div 
+          key={index}
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+            isWin 
+              ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+              : 'bg-red-500/20 text-red-400 border border-red-500/30'
+          }`}
+        >
+          {result}
+        </div>
+      );
+    });
   };
 
   // Animate rows with staggered delay
@@ -42,15 +69,28 @@ export default function Leaderboard({ players }: LeaderboardProps) {
   // Sort players by rank
   const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
 
+  // Close modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const modal = document.getElementById('match-history-modal');
+      if (modal && !modal.contains(e.target as Node)) {
+        setShowMatchHistory(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <section id="leaderboard" className="space-y-6">
+    <section id="leaderboard" className="space-y-6 relative">
       <div className="bg-gray-900/60 border border-purple-900/50 rounded-lg overflow-hidden shadow-xl">
         <div className="bg-purple-900/30 border-b border-purple-900/50 py-4 px-6">
           <h2 className="text-2xl font-bold text-white flex items-center">
             <span className="text-purple-400 mr-2">
               <FaCrown />
             </span>
-            Monthly Competitive Combat Rankings
+            Astrz Rankings
           </h2>
         </div>
         
@@ -90,7 +130,12 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                     {player.rank}.
                   </span>
                 </div>
-                <div className="col-span-7 font-medium text-white">{player.name}</div>
+                <div 
+                  className="col-span-7 font-medium text-white hover:text-purple-300 cursor-pointer transition-colors"
+                  onClick={() => handlePlayerClick(player)}
+                >
+                  {player.name}
+                </div>
                 <div 
                   className={`col-span-4 text-right font-mono ${
                     player.rank === 1 
@@ -107,6 +152,76 @@ export default function Leaderboard({ players }: LeaderboardProps) {
           })}
         </div>
       </div>
+      
+      {/* Match History Modal */}
+      {showMatchHistory && selectedPlayer && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div 
+            id="match-history-modal"
+            className="bg-gray-900 border border-purple-600 rounded-lg shadow-xl max-w-md w-full p-5 animate-fadeIn"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
+                  style={{ backgroundColor: selectedPlayer.rank <= 3 ? `${getCrownColor(selectedPlayer.rank)}20` : 'rgba(139, 92, 246, 0.2)' }}
+                >
+                  {selectedPlayer.rank <= 3 ? (
+                    <FaCrown style={{ color: getCrownColor(selectedPlayer.rank) }} />
+                  ) : (
+                    <FaTrophy className="text-purple-400" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">{selectedPlayer.name}</h3>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-sm">Rank: {selectedPlayer.rank}</span>
+                    <span className="text-gray-500">•</span>
+                    <span className="text-purple-400 text-sm font-mono">{selectedPlayer.points} pts</span>
+                  </div>
+                </div>
+              </div>
+              <button 
+                className="text-gray-400 hover:text-white"
+                onClick={() => setShowMatchHistory(false)}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <div className="my-4 border-t border-gray-800"></div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-400 mb-3">Recent duel performances (last 7 matches)</h4>
+              <div className="flex items-center justify-between space-x-2">
+                {renderMatchHistory(selectedPlayer.recentMatches)}
+              </div>
+              
+              <div className="mt-4 flex justify-between text-sm">
+                <span className="text-green-400 flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-1"></div>
+                  W: Wins ({selectedPlayer.recentMatches?.split('').filter(m => m === 'W').length || 0})
+                </span>
+                <span className="text-red-400 flex items-center">
+                  <div className="w-3 h-3 bg-red-500 rounded-full mr-1"></div>
+                  L: Losses ({selectedPlayer.recentMatches?.split('').filter(m => m === 'L').length || 0})
+                </span>
+              </div>
+            </div>
+            
+            <div className="mt-5 pt-4 border-t border-gray-800">
+              <button 
+                className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+                onClick={() => setShowMatchHistory(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

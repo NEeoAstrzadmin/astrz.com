@@ -21,17 +21,45 @@ export default function Home() {
         {/* Game description */}
         <section className="mb-8">
           <div className="bg-gray-900/60 rounded-lg p-6 border border-purple-900/40 shadow-lg">
-            <h2 className="text-xl font-bold mb-3 text-purple-300">Monthly Competitive Combat Rankings</h2>
-            <p className="text-gray-300">
-              This leaderboard showcases the top 30 players in the monthly combat tournament based on their performance points.
-              Players are ranked according to their skill level, with the top performers receiving special recognition.
-            </p>
-            <div className="flex flex-wrap gap-3 mt-4">
+            <h2 className="text-xl font-bold mb-3 text-purple-300">Astrz Rankings System</h2>
+            <div className="space-y-6 text-gray-300">
+              <div className="bg-gray-800/30 p-5 rounded-md border-l-4 border-purple-600">
+                <h3 className="text-lg font-medium text-white flex items-center mb-2">
+                  <span className="text-yellow-400 mr-2">🏆</span> The Astrz Rankings System – A Legacy of Combat
+                </h3>
+                <p className="mb-3">
+                  Launched on January 1st, 2021, the Astrz Rankings System has served as the definitive measure of skill and dominance within the Astrz universe. Designed around intense ranked duels, this system assigns combat points to players based on their performance, drawing inspiration from traditional MC-style tiers—but with a unique twist.
+                </p>
+                <p className="mb-3">
+                  Rather than separating players into multiple divisions, Astrz uses a unified point-based system paired with combat rank titles, rewarding consistency, precision, and competitive excellence.
+                </p>
+                <p className="text-sm text-purple-300">
+                  Further details and ranking insights are available in our <a href="#" className="underline hover:text-white">Discord community</a>.
+                </p>
+              </div>
+              
+              <div className="bg-gray-800/30 p-5 rounded-md border-l-4 border-yellow-500">
+                <h3 className="text-lg font-medium text-white flex items-center mb-2">
+                  <span className="text-yellow-400 mr-2">👑</span> A New Era Begins: Wido Claims the Crown
+                </h3>
+                <p className="mb-3">
+                  Since the inception of the leaderboard, the Astrz competitive scene has been defined by two legendary names: Sycthy and Neo H. For nearly five years, they held an iron grip on the #1 spot, fending off every challenger and cementing their legacy as titans of the game.
+                </p>
+                <p>
+                  But in a historic shift, Wido has broken the streak. After a relentless rise through the ranks, Wido now stands as the third player ever to hold the coveted #1 position, marking a new chapter in Astrz history.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3 mt-6">
               <div className="px-3 py-1 bg-yellow-500 bg-opacity-10 text-yellow-500 rounded-full text-sm font-medium border border-yellow-500/20">
                 Top 3 Players - Crown Recognition
               </div>
               <div className="px-3 py-1 bg-purple-500 bg-opacity-10 text-purple-400 rounded-full text-sm font-medium border border-purple-500/20">
                 Top 10 Players - Elite Status
+              </div>
+              <div className="px-3 py-1 bg-blue-500 bg-opacity-10 text-blue-400 rounded-full text-sm font-medium border border-blue-500/20">
+                Click on player names to see recent duel history
               </div>
             </div>
           </div>

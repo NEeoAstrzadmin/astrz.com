@@ -9,7 +9,7 @@ export default function Footer() {
             <FaCrown className="text-yellow-400 mr-2" />
             <div>
               <p className="text-white text-sm">
-                <span className="text-purple-400 font-medium">Monthly Competitive</span> Combat Rankings
+                <span className="text-purple-400 font-medium">Astrz</span> Rankings System
               </p>
               <p className="text-gray-400 text-xs mt-1">
                 © {new Date().getFullYear()} Last updated: April 13, 2025
