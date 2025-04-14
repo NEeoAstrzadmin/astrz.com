@@ -278,7 +278,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
             
             <div>
               <h4 className="text-sm font-medium text-gray-400 mb-3">Recent duel performances (last 7 matches)</h4>
-              <div className="flex items-center justify-between space-x-2">
+              <div className="flex items-center justify-between space-x-2 animate-fadeIn">
                 {renderMatchHistory(selectedPlayer.recentMatches)}
               </div>
               
