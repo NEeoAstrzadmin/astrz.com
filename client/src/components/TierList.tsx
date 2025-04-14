@@ -199,7 +199,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                   {/* Player Name */}
                   <div 
                     className="font-medium text-white hover:text-purple-300 cursor-pointer transition-colors"
-                    onClick={() => setSelectedPlayer(player)}
+                    onClick={() => handlePlayerClick(player)}
                   >
                     {player.name}
                   </div>
@@ -222,9 +222,9 @@ export default function Leaderboard({ players }: LeaderboardProps) {
         </div>
       </div>
       
-      {/* Player Card */}
-      {selectedPlayer && (
-        <PlayerCard player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />
+      {/* Match History Modal */}
+      {showMatchHistory && selectedPlayer && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div 
             id="match-history-modal"
             className="bg-gray-900 border border-purple-600 rounded-lg shadow-xl max-w-md w-full p-5 animate-fadeIn"
