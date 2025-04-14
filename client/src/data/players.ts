@@ -2,7 +2,17 @@ export interface Player {
   rank: number;
   name: string;
   points: number;
-  recentMatches?: string; // Format: "WWLWWLW" for 7 recent matches
+  recentMatches?: string;
+  isRetired?: boolean;
+  peakPoints?: number;
+  stats?: {
+    wins: number;
+    losses: number;
+    winStreak: number;
+    kills: number;
+    teamChampion: number;
+    mcSatChampion: number;
+  }
 }
 
 // Generate random match history for demonstration
@@ -42,9 +52,40 @@ export const players: Player[] = [
   { rank: 23, name: "Ravv", points: 88, recentMatches: "LLWWLLL" },
   { rank: 24, name: "Polo", points: 82, recentMatches: "WLLWLLL" },
   { rank: 25, name: "Retoro", points: 78, recentMatches: "LWLLLWL" },
-  { rank: 26, name: "Neo H", points: 71, recentMatches: "WLLWWLL" },
+  { 
+    rank: 26, 
+    name: "Neo H", 
+    points: 71, 
+    recentMatches: "WLLWWLL",
+    isRetired: true,
+    peakPoints: 427,
+    stats: {
+      wins: 245,
+      losses: 189,
+      winStreak: 12,
+      kills: 434,
+      teamChampion: 3,
+      mcSatChampion: 0
+    }
+  },
   { rank: 27, name: "Raivo", points: 68, recentMatches: "WLLLWLL" },
   { rank: 28, name: "Tron T", points: 60, recentMatches: "LLWLLWL" },
   { rank: 29, name: "Inferno", points: 60, recentMatches: "LLLWLWL" },
-  { rank: 30, name: "Rutner", points: 67, recentMatches: "LLWLLWL" }
+  { rank: 30, name: "Rutner", points: 67, recentMatches: "LLWLLWL" },
+  { 
+    rank: 31, 
+    name: "Jka", 
+    points: 65, 
+    recentMatches: "LLWLLWL",
+    isRetired: true,
+    peakPoints: 411,
+    stats: {
+      wins: 198,
+      losses: 167,
+      winStreak: 8,
+      kills: 365,
+      teamChampion: 2,
+      mcSatChampion: 0
+    }
+  }
 ];
