@@ -270,8 +270,8 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                       </span>
                     </div>
                     
-                    <div className="col-span-5 md:col-span-6 flex items-center">
-                      {/* Player Name */}
+                    <div className="col-span-5 md:col-span-4 flex items-center">
+                      {/* Player Name and Combat Title */}
                       <div className="font-medium text-white hover:text-purple-300 transition-colors text-md">
                         {player.name}
                         
@@ -296,10 +296,27 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                             {playerTier.name}
                           </Badge>
                         </div>
+                        
+                        {/* AI Analysis button for mobile */}
+                        <div className="mt-1 md:hidden">
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            className="h-6 px-2 text-xs bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/40"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPlayer(player);
+                              setShowAIPrediction(true);
+                            }}
+                          >
+                            <FaRobot className="text-purple-400 mr-1" size={10} />
+                            <span>AI Predict</span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="col-span-3 md:col-span-4 text-center">
+                    <div className="col-span-4 text-center">
                       <div className="flex items-center justify-center">
                         {/* Combat Badge */}
                         {player.isRetired ? (
@@ -335,27 +352,30 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                               </span>
                             </div>
                             
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button 
-                                    size="sm"
-                                    variant="outline"
-                                    className="hidden md:flex h-8 px-2 bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/40"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedPlayer(player);
-                                      setShowAIPrediction(true);
-                                    }}
-                                  >
-                                    <FaRobot className="text-purple-400" size={12} />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                  <p className="text-xs">AI Analysis</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            {/* AI Analysis button for desktop */}
+                            <div className="hidden md:block">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-8 px-2 bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/40"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedPlayer(player);
+                                        setShowAIPrediction(true);
+                                      }}
+                                    >
+                                      <FaRobot className="text-purple-400" size={12} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    <p className="text-xs">AI Analysis</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -374,6 +394,15 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                     >
                       {player.points} 
                       <span className="text-xs font-normal ml-1 text-gray-500">pts</span>
+                      
+                      {/* Show peak points for all players */}
+                      {player.peakPoints && player.peakPoints > player.points && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          <span className="text-yellow-500 font-medium">
+                            {player.peakPoints}
+                          </span> peak
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -483,21 +512,32 @@ export default function Leaderboard({ players }: LeaderboardProps) {
               <div className="col-span-6 md:col-span-7">PLAYER</div>
               <div className="col-span-5 md:col-span-4 text-right">WIN STREAK</div>
             </div>
+          </TabsContent>
+          
+          {/* Hall of Fame Tab */}
+          <TabsContent value="halloffame" className="m-0 animate-fadeIn">
+            {/* Table Header */}
+            <div className="sticky top-0 z-10 grid grid-cols-12 py-3 px-5 border-b border-gray-800 backdrop-blur-sm bg-gray-900/90 text-sm font-medium text-gray-400">
+              <div className="col-span-1">RANK</div>
+              <div className="col-span-5 md:col-span-5">PLAYER</div>
+              <div className="col-span-3 text-center">LEGACY</div>
+              <div className="col-span-3 text-right">PEAK POINTS</div>
+            </div>
             
             {/* Player Rows */}
             <div className="divide-y divide-gray-800/50">
-              {sortedByWinStreak.slice(0, 15).map((player, index) => {
+              {players.filter(p => p.isRetired).sort((a, b) => (b.peakPoints || 0) - (a.peakPoints || 0)).map((player, index) => {
                 const isTopThree = index < 3;
                 const crownColor = getCrownColor(index + 1);
-                const playerTier = getPlayerRankTier(player.points, player.isRetired);
-                const isVisible = visibleRows[`winstreak-${player.rank}`];
-                const streakValue = player.stats?.winStreak || 0;
+                const isVisible = visibleRows[`halloffame-${player.rank}`] !== false;
+                const peakValue = player.peakPoints || player.points;
+                const silverColor = "rgba(192, 192, 192, 0.8)";
                 
                 return (
                   <div 
                     key={player.rank} 
                     className={`grid grid-cols-12 py-4 px-5 items-center hover:bg-gray-800/30 ${
-                      isTopThree ? 'bg-gray-800/20' : ''
+                      isTopThree ? 'bg-gradient-to-r from-gray-800/40 to-transparent' : ''
                     } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
                       isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
@@ -509,7 +549,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                   >
                     <div className="col-span-1 font-mono text-lg font-semibold flex items-center">
                       {isTopThree && (
-                        <FaFireAlt 
+                        <FaMedal 
                           className="mr-2 inline animate-pulse" 
                           style={{ color: crownColor }}
                           size={index === 0 ? 18 : 14}
@@ -520,70 +560,68 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                       </span>
                     </div>
                     
-                    <div className="col-span-6 md:col-span-7 flex items-center">
+                    <div className="col-span-5 flex items-center">
                       {/* Player Name */}
-                      <div className="font-medium text-white hover:text-purple-300 transition-colors text-md">
-                        {player.name}
-                        
-                        {player.isRetired && (
-                          <Badge variant="outline" className="ml-2 bg-gray-800/80 text-gray-300 border-gray-600 text-[10px]">
-                            Retired
-                          </Badge>
-                        )}
-
-                        {/* Combat title */}
-                        <div className="text-xs text-gray-400 flex items-center mt-0.5">
-                          <FaChessKnight className="text-purple-500 mr-1 opacity-75" size={10} />
-                          <span className="text-gray-400 hover:text-purple-300 transition-colors">
-                            {player.combatTitle || generateDistinctiveTitle(player)}
-                          </span>
-                        </div>
-                        
-                        {/* Rank Badge on medium screens */}
-                        <div className="hidden md:block mt-1">
-                          <Badge 
-                            className="text-[10px] font-normal"
-                            style={{ 
-                              backgroundColor: playerTier.backgroundColor,
-                              color: playerTier.color,
-                              borderLeft: `2px solid ${playerTier.color}`
-                            }}
-                          >
-                            {playerTier.name}
-                          </Badge>
+                      <div className="font-medium text-white hover:text-purple-300 transition-colors text-md flex items-center">
+                        <div>
+                          {player.name}
+                          
+                          {/* Combat title */}
+                          <div className="text-xs text-gray-400 flex items-center mt-0.5">
+                            <FaChessKnight className="text-gray-400 mr-1 opacity-75" size={10} />
+                            <span className="text-gray-400 hover:text-purple-300 transition-colors">
+                              {player.combatTitle || generateDistinctiveTitle(player)}
+                            </span>
+                          </div>
+                          
+                          {/* Retired status badge */}
+                          <div className="mt-1">
+                            <Badge 
+                              className="text-[10px] font-normal"
+                              style={{ 
+                                backgroundColor: "rgba(192, 192, 192, 0.15)",
+                                color: silverColor,
+                                borderLeft: `2px solid ${silverColor}`
+                              }}
+                            >
+                              Retired Legend
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="col-span-5 md:col-span-4 text-right">
-                      <div className="flex flex-col items-end">
-                        <div className="flex items-center justify-end">
-                          <div className="flex">
-                            {Array.from({ length: Math.min(streakValue, 5) }).map((_, i) => (
-                              <div 
-                                key={i} 
-                                className="w-3 h-5 mx-0.5"
-                                style={{ 
-                                  color: '#FF6B6B',
-                                  opacity: 1 - (i * 0.15),
-                                  animation: 'pulse 1.5s infinite',
-                                  animationDelay: `${i * 0.2}s`
-                                }}
-                              >
-                                <FaFireAlt size={12} className="text-orange-500" />
-                              </div>
-                            ))}
-                          </div>
-                          <span className="font-mono text-lg font-bold text-orange-400 ml-2">
-                            {streakValue}
+                    <div className="col-span-3 text-center">
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center justify-center text-gray-300 bg-gray-800/50 rounded-md px-2 py-1">
+                          <FaTrophy className="mr-2 text-yellow-500" size={14} />
+                          <span className="text-sm font-medium">
+                            {player.stats?.teamChampion || 0} Championships
                           </span>
                         </div>
-                        <span className="text-xs text-gray-500 mt-0.5">Consecutive Wins</span>
+                        <span className="text-xs text-gray-500 mt-1">{player.stats?.wins || 0} Total Wins</span>
+                      </div>
+                    </div>
+                    
+                    <div className="col-span-3 text-right">
+                      <div className="flex flex-col items-end">
+                        <span className="font-mono text-xl font-bold text-yellow-400">
+                          {peakValue}
+                        </span>
+                        <span className="text-xs text-gray-500 mt-0.5">All-Time Best</span>
                       </div>
                     </div>
                   </div>
                 );
               })}
+              
+              {players.filter(p => p.isRetired).length === 0 && (
+                <div className="p-16 text-center text-gray-400">
+                  <FaUserTimes size={32} className="mx-auto mb-4 text-gray-600" />
+                  <p className="text-lg">No retired players found</p>
+                  <p className="text-sm text-gray-500 mt-2">Retired legends will appear here</p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
