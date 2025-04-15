@@ -1,11 +1,5 @@
-import OpenAI from "openai";
 import { Player } from "@/data/players";
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true // Note: In production, API calls should be made server-side
-});
+import { apiRequest } from "@/lib/queryClient";
 
 export interface PredictionResult {
   predictedRank: number;

@@ -119,8 +119,24 @@ export default function Leaderboard({ players }: LeaderboardProps) {
 
   return (
     <section id="leaderboard" className="space-y-6 relative">
-      {/* Admin Panel Link */}
-      <div className="flex justify-end mb-3">
+      {/* Header Controls */}
+      <div className="flex justify-between items-center mb-3">
+        {/* AI Prediction Button */}
+        <Button 
+          variant="outline" 
+          className="text-sm text-purple-300 hover:text-purple-100 flex items-center gap-1.5 bg-gray-800/70 hover:bg-purple-900/30 transition-colors border border-purple-700/50 hover:border-purple-500"
+          onClick={() => {
+            if (sortedByRank.length > 0) {
+              setSelectedPlayer(sortedByRank[0]);
+              setShowAIPrediction(true);
+            }
+          }}
+        >
+          <FaBrain className="text-purple-400" /> 
+          <span>Combat AI Analysis</span>
+        </Button>
+        
+        {/* Admin Panel Link */}
         <Link href="/admin" className="text-sm text-gray-300 hover:text-purple-400 flex items-center gap-1.5 bg-gray-800/70 px-4 py-1.5 rounded-md transition-colors hover:bg-gray-700/70 border border-gray-700/50">
           <FaCog className="text-xs" /> <span>Admin Panel</span>
         </Link>
@@ -294,28 +310,52 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                             <span className="text-sm font-medium text-gray-300">Retired Legend</span>
                           </div>
                         ) : (
-                          <div 
-                            className="flex items-center justify-center rounded-lg px-3 py-1.5 border animate-shimmer" 
-                            style={{ 
-                              backgroundColor: `${playerTier.backgroundColor}90`,
-                              borderColor: `${playerTier.color}40`
-                            }}
-                          >
+                          <div className="flex flex-col md:flex-row items-center gap-2">
                             <div 
-                              className="rounded-full p-1.5 mr-2 animate-pulse" 
-                              style={{ backgroundColor: `${playerTier.color}30` }}
+                              className="flex items-center justify-center rounded-lg px-3 py-1.5 border animate-shimmer" 
+                              style={{ 
+                                backgroundColor: `${playerTier.backgroundColor}90`,
+                                borderColor: `${playerTier.color}40`
+                              }}
                             >
-                              {playerTier.name === "Astrz Prime" && <FaCrown className="text-yellow-400" size={14} />}
-                              {playerTier.name === "Astrz Vanguard" && <FaSkull className="text-blue-400" size={14} />}
-                              {playerTier.name === "Astrz Challenger" && <FaFireAlt className="text-green-400" size={14} />}
-                              {playerTier.name === "Astrz Edge" && <FaTrophy className="text-orange-400" size={14} />}
+                              <div 
+                                className="rounded-full p-1.5 mr-2 animate-pulse" 
+                                style={{ backgroundColor: `${playerTier.color}30` }}
+                              >
+                                {playerTier.name === "Astrz Prime" && <FaCrown className="text-yellow-400" size={14} />}
+                                {playerTier.name === "Astrz Vanguard" && <FaSkull className="text-blue-400" size={14} />}
+                                {playerTier.name === "Astrz Challenger" && <FaFireAlt className="text-green-400" size={14} />}
+                                {playerTier.name === "Astrz Edge" && <FaTrophy className="text-orange-400" size={14} />}
+                              </div>
+                              <span 
+                                className="text-sm font-medium" 
+                                style={{ color: playerTier.color }}
+                              >
+                                {playerTier.name}
+                              </span>
                             </div>
-                            <span 
-                              className="text-sm font-medium" 
-                              style={{ color: playerTier.color }}
-                            >
-                              {playerTier.name}
-                            </span>
+                            
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    size="sm"
+                                    variant="outline"
+                                    className="hidden md:flex h-8 px-2 bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/40"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedPlayer(player);
+                                      setShowAIPrediction(true);
+                                    }}
+                                  >
+                                    <FaRobot className="text-purple-400" size={12} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <p className="text-xs">AI Analysis</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
                         )}
                       </div>
@@ -670,6 +710,15 @@ export default function Leaderboard({ players }: LeaderboardProps) {
         <PlayerCard
           player={selectedPlayer}
           onClose={() => setShowPlayerCard(false)}
+        />
+      )}
+      
+      {/* AI Prediction */}
+      {showAIPrediction && selectedPlayer && (
+        <AIPrediction
+          player={selectedPlayer}
+          allPlayers={players}
+          onClose={() => setShowAIPrediction(false)}
         />
       )}
     </section>
