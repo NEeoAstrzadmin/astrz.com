@@ -4,10 +4,11 @@ import { Player } from "@/data/players";
 import { 
   FaTimes, FaCrown, FaUserAlt, FaTrophy, FaSkull, 
   FaFire, FaMedal, FaChartBar, FaRegListAlt, 
-  FaRegCalendarAlt, FaShieldAlt, FaCrosshairs 
+  FaRegCalendarAlt, FaShieldAlt, FaCrosshairs, FaChessKnight
 } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { generateCombatTitle, generateDistinctiveTitle } from "@/lib/titleGenerator";
 
 interface PlayerCardProps {
   player: Player;
@@ -108,6 +109,14 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                   </Badge>
                   
                   <span className="text-sm text-gray-400">Rank #{player.rank}</span>
+                </div>
+                
+                {/* Combat Title */}
+                <div className="mt-2 flex items-center">
+                  <FaChessKnight className="text-purple-500 mr-2" size={14} />
+                  <span className="text-sm font-medium bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
+                    {player.combatTitle || generateDistinctiveTitle(player)}
+                  </span>
                 </div>
               </div>
             </div>

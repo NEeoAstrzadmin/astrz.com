@@ -5,6 +5,7 @@ export interface Player {
   recentMatches?: string;
   isRetired?: boolean;
   peakPoints?: number;
+  combatTitle?: string;
   stats?: {
     wins: number;
     losses: number;

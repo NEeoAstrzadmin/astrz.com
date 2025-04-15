@@ -4,12 +4,13 @@ import { Player } from "@/data/players";
 import { 
   FaCrown, FaTrophy, FaSkull, FaFireAlt, FaUserTimes, 
   FaChartLine, FaCog, FaInfoCircle, FaMedal,
-  FaShieldAlt, FaBolt, FaFighterJet
+  FaShieldAlt, FaBolt, FaFighterJet, FaChessKnight
 } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateCombatTitle, generateDistinctiveTitle } from "@/lib/titleGenerator";
 
 interface LeaderboardProps {
   players: Player[];
@@ -254,6 +255,14 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                       <div className="font-medium text-white hover:text-purple-300 transition-colors text-md">
                         {player.name}
                         
+                        {/* Combat title */}
+                        <div className="text-xs text-gray-400 flex items-center mt-0.5">
+                          <FaChessKnight className="text-purple-500 mr-1 opacity-75" size={10} />
+                          <span className="text-gray-400 hover:text-purple-300 transition-colors">
+                            {player.combatTitle || generateDistinctiveTitle(player)}
+                          </span>
+                        </div>
+                        
                         {/* Rank Badge - Only shown on medium and larger screens */}
                         <div className="hidden md:block mt-1">
                           <Badge 
@@ -384,6 +393,14 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                           </Badge>
                         )}
                         
+                        {/* Combat title */}
+                        <div className="text-xs text-gray-400 flex items-center mt-0.5">
+                          <FaChessKnight className="text-purple-500 mr-1 opacity-75" size={10} />
+                          <span className="text-gray-400 hover:text-purple-300 transition-colors">
+                            {player.combatTitle || generateDistinctiveTitle(player)}
+                          </span>
+                        </div>
+                        
                         {/* Player tier badge - only on medium screens and up */}
                         <div className="hidden md:block mt-1">
                           <Badge 
@@ -469,6 +486,14 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                             Retired
                           </Badge>
                         )}
+
+                        {/* Combat title */}
+                        <div className="text-xs text-gray-400 flex items-center mt-0.5">
+                          <FaChessKnight className="text-purple-500 mr-1 opacity-75" size={10} />
+                          <span className="text-gray-400 hover:text-purple-300 transition-colors">
+                            {player.combatTitle || generateDistinctiveTitle(player)}
+                          </span>
+                        </div>
                         
                         {/* Rank Badge on medium screens */}
                         <div className="hidden md:block mt-1">
@@ -566,6 +591,14 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                       <div className="font-medium text-white hover:text-purple-300 transition-colors text-md flex items-center">
                         <div>
                           {player.name}
+                          
+                          {/* Combat title */}
+                          <div className="text-xs text-gray-400 flex items-center mt-0.5">
+                            <FaChessKnight className="text-gray-400 mr-1 opacity-75" size={10} />
+                            <span className="text-gray-400 hover:text-purple-300 transition-colors">
+                              {player.combatTitle || generateDistinctiveTitle(player)}
+                            </span>
+                          </div>
                           
                           {/* Retired status badge */}
                           <div className="mt-1">
