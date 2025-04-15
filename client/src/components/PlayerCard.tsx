@@ -30,7 +30,7 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                 ({getStatusText()})
               </span>
             </h3>
-            <div className="flex items-center space-x-2 mt-1">
+            <div className="flex items-center space-x-2 mt-1 flex-wrap">
               <span className="text-gray-400 text-sm">Rank: {player.rank}</span>
               <span className="text-gray-500">•</span>
               <span className="text-purple-400 text-sm font-mono">{player.points} pts</span>
@@ -52,8 +52,17 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
           </button>
         </div>
 
+        {player.isRetired && player.peakPoints && (
+          <div className="bg-gray-800/30 p-3 rounded-lg mb-4 border-l-2 border-yellow-400">
+            <div className="text-yellow-400 text-sm font-semibold mb-1">Retired Player</div>
+            <p className="text-gray-300 text-sm">
+              This legendary player reached a peak of <span className="text-yellow-400 font-mono">{player.peakPoints} points</span> before retirement.
+            </p>
+          </div>
+        )}
+
         {player.stats && (
-          <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="space-y-2">
               <div className="bg-gray-800/50 p-3 rounded-lg">
                 <span className="text-gray-400 text-sm">Wins</span>
