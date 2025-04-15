@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import PlayerCard from "./PlayerCard";
+import AIPrediction from "./AIPrediction";
 import { Player } from "@/data/players";
 import { 
   FaCrown, FaTrophy, FaSkull, FaFireAlt, FaUserTimes, 
   FaChartLine, FaCog, FaInfoCircle, FaMedal,
-  FaShieldAlt, FaBolt, FaFighterJet, FaChessKnight
+  FaShieldAlt, FaBolt, FaFighterJet, FaChessKnight,
+  FaRobot, FaBrain
 } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateCombatTitle, generateDistinctiveTitle } from "@/lib/titleGenerator";
 
@@ -27,6 +30,7 @@ interface RankTier {
 export default function Leaderboard({ players }: LeaderboardProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [showPlayerCard, setShowPlayerCard] = useState(false);
+  const [showAIPrediction, setShowAIPrediction] = useState(false);
   const [visibleRows, setVisibleRows] = useState<Record<string, boolean>>({});
 
   // Colors for the leaderboard
