@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PlayerCard from "./PlayerCard";
 import { Player } from "@/data/players";
-import { FaCrown, FaTrophy, FaSkull, FaUserAlt, FaUserTimes } from "react-icons/fa";
+import { 
+  FaCrown, FaTrophy, FaSkull, FaFireAlt, FaUserTimes, 
+  FaChartLine, FaCog, FaInfoCircle, FaMedal 
+} from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface LeaderboardProps {
   players: Player[];
@@ -20,6 +25,7 @@ interface RankTier {
 export default function Leaderboard({ players }: LeaderboardProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [showPlayerCard, setShowPlayerCard] = useState(false);
+  const [visibleRows, setVisibleRows] = useState<Record<string, boolean>>({});
 
   // Colors for the leaderboard
   const goldColor = "#FFD700";
@@ -68,143 +74,237 @@ export default function Leaderboard({ players }: LeaderboardProps) {
     if (!b.stats?.kills) return -1;
     return b.stats.kills - a.stats.kills;
   });
+  const sortedByWinStreak = [...players].sort((a, b) => {
+    if (!a.stats?.winStreak) return 1;
+    if (!b.stats?.winStreak) return -1;
+    return b.stats.winStreak - a.stats.winStreak;
+  });
   const retiredPlayers = [...players].filter(player => player.isRetired);
+
+  // Staggered animation on mount
+  useEffect(() => {
+    const categories = ['overall', 'kills', 'winstreak', 'retired'];
+    
+    categories.forEach(category => {
+      let source = 
+        category === 'overall' ? sortedByRank :
+        category === 'kills' ? sortedByKills :
+        category === 'winstreak' ? sortedByWinStreak :
+        retiredPlayers;
+    
+      source.forEach((player, index) => {
+        setTimeout(() => {
+          setVisibleRows(prev => ({
+            ...prev,
+            [`${category}-${player.rank}`]: true
+          }));
+        }, 30 * index);
+      });
+    });
+  }, [players]);
+
+  // Format large numbers with commas
+  const formatNumber = (num: number): string => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
 
   return (
     <section id="leaderboard" className="space-y-6 relative">
       {/* Admin Panel Link */}
-      <div className="flex justify-end mb-2">
-        <Link href="/admin" className="text-sm text-gray-400 hover:text-purple-400 flex items-center gap-1 bg-gray-800/50 px-3 py-1 rounded-md transition-colors">
-          <span className="text-xs">Admin Panel</span>
+      <div className="flex justify-end mb-3">
+        <Link href="/admin" className="text-sm text-gray-300 hover:text-purple-400 flex items-center gap-1.5 bg-gray-800/70 px-4 py-1.5 rounded-md transition-colors hover:bg-gray-700/70 border border-gray-700/50">
+          <FaCog className="text-xs" /> <span>Admin Panel</span>
         </Link>
       </div>
 
-      <div className="bg-gray-900/60 border border-purple-900/50 rounded-lg overflow-hidden shadow-lg">
-        <div className="bg-purple-900/30 border-b border-purple-900/50 py-4 px-6">
+      <div className="bg-gray-900/80 border border-purple-900/40 rounded-lg overflow-hidden shadow-xl backdrop-blur-sm">
+        <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/30 border-b border-purple-900/50 py-5 px-6">
           <h2 className="text-2xl font-bold text-white flex items-center">
-            <span className="text-purple-400 mr-2">
+            <span className="text-purple-400 mr-3 animate-bounce">
               <FaCrown />
             </span>
-            Astrz Rankings
+            Astrz Combat Rankings
           </h2>
+          <p className="text-gray-400 text-sm mt-1">Tracking the most competitive players in the Astrz universe</p>
         </div>
         
         <Tabs defaultValue="overall" className="w-full">
-          <TabsList className="w-full rounded-none border-b border-gray-800 bg-gray-800/50 h-auto py-2 justify-start gap-2 px-4">
-            <TabsTrigger value="overall" className="data-[state=active]:bg-purple-700">
-              <FaTrophy className="mr-2" /> Overall
-            </TabsTrigger>
-            <TabsTrigger value="kills" className="data-[state=active]:bg-purple-700">
-              <FaSkull className="mr-2" /> Top Kills
-            </TabsTrigger>
-            <TabsTrigger value="retired" className="data-[state=active]:bg-purple-700">
-              <FaUserTimes className="mr-2" /> Retired Players
-            </TabsTrigger>
-          </TabsList>
+          <div className="bg-gray-800/80 backdrop-blur-sm">
+            <TabsList className="w-full rounded-none border-b border-gray-700 h-auto py-3 justify-center gap-1 px-4 bg-transparent">
+              <TabsTrigger 
+                value="overall" 
+                className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+              >
+                <FaTrophy className="mr-2 text-yellow-500" /> Overall Rankings
+              </TabsTrigger>
+              <TabsTrigger 
+                value="kills" 
+                className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+              >
+                <FaSkull className="mr-2 text-red-500" /> Top Kills
+              </TabsTrigger>
+              <TabsTrigger 
+                value="winstreak" 
+                className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+              >
+                <FaFireAlt className="mr-2 text-orange-500" /> Win Streaks
+              </TabsTrigger>
+              <TabsTrigger 
+                value="retired" 
+                className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+              >
+                <FaUserTimes className="mr-2 text-gray-300" /> Hall of Fame
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Rank Tiers Legend */}
-          <div className="flex flex-wrap justify-between p-3 border-b border-gray-800 gap-2">
-            {rankTiers.map((tier, index) => (
-              <div 
-                key={index}
-                className="flex items-center hover:scale-110 transition-transform"
-                style={{ color: tier.color }}
-              >
-                <div 
-                  className="w-3 h-3 rounded-full mr-1"
-                  style={{ backgroundColor: tier.color }}
-                ></div>
-                <span className="text-xs font-medium">{tier.name}</span>
-              </div>
-            ))}
-            <div 
-              className="flex items-center hover:scale-110 transition-transform"
-              style={{ color: silverColor }}
-            >
-              <div 
-                className="w-3 h-3 rounded-full mr-1"
-                style={{ backgroundColor: silverColor }}
-              ></div>
-              <span className="text-xs font-medium">Retired Legend</span>
-            </div>
+          <div className="flex flex-wrap justify-center p-3 border-b border-gray-800 gap-3 bg-gray-900/60">
+            <TooltipProvider>
+              {rankTiers.map((tier, index) => (
+                <Tooltip key={index}>
+                  <TooltipTrigger asChild>
+                    <div 
+                      className="flex items-center hover:scale-110 transition-transform cursor-help"
+                      style={{ color: tier.color }}
+                    >
+                      <div 
+                        className="w-3 h-3 rounded-full mr-1.5 animate-pulse"
+                        style={{ backgroundColor: tier.color }}
+                      ></div>
+                      <span className="text-xs font-medium">{tier.name}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs">Min. points: {tier.minPoints}+ pts</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div 
+                    className="flex items-center hover:scale-110 transition-transform cursor-help"
+                    style={{ color: silverColor }}
+                  >
+                    <div 
+                      className="w-3 h-3 rounded-full mr-1.5"
+                      style={{ backgroundColor: silverColor }}
+                    ></div>
+                    <span className="text-xs font-medium">Retired Legend</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p className="text-xs">Former champions who've retired from active competition</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         
           {/* Overall Rankings Tab */}
-          <TabsContent value="overall" className="m-0">
+          <TabsContent value="overall" className="m-0 animate-fadeIn">
             {/* Table Header */}
-            <div className="grid grid-cols-12 py-3 px-4 border-b border-gray-800 bg-gray-800/50 text-sm font-medium text-gray-400">
+            <div className="sticky top-0 z-10 grid grid-cols-12 py-3 px-5 border-b border-gray-800 backdrop-blur-sm bg-gray-900/90 text-sm font-medium text-gray-400">
               <div className="col-span-1">RANK</div>
-              <div className="col-span-7">PLAYER</div>
-              <div className="col-span-4 text-right">POINTS</div>
+              <div className="col-span-5 md:col-span-6">PLAYER</div>
+              <div className="col-span-3 md:col-span-2 text-center">STATUS</div>
+              <div className="col-span-3 text-right">POINTS</div>
             </div>
             
             {/* Player Rows */}
-            <div className="divide-y divide-gray-800/60">
-              {sortedByRank.map((player) => {
+            <div className="divide-y divide-gray-800/50">
+              {sortedByRank.map((player, index) => {
                 const isTopThree = player.rank <= 3;
                 const crownColor = getCrownColor(player.rank);
                 const playerTier = getPlayerRankTier(player.points, player.isRetired);
+                const isVisible = visibleRows[`overall-${player.rank}`];
                 
                 return (
                   <div 
                     key={player.rank} 
-                    className={`grid grid-cols-12 py-3 px-4 items-center hover:bg-gray-800/30 ${
+                    className={`grid grid-cols-12 py-4 px-5 items-center hover:bg-gray-800/30 ${
                       isTopThree ? 'bg-gray-800/20' : ''
-                    } hover:translate-x-1 transition-transform`}
+                    } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
+                      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`}
                     style={{ 
-                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined
+                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
+                      transitionDelay: `${index * 30}ms`
                     }}
+                    onClick={() => handlePlayerClick(player)}
                   >
-                    <div className="col-span-1 font-mono font-semibold flex items-center">
+                    <div className="col-span-1 font-mono text-lg font-semibold flex items-center">
                       {player.rank <= 3 && !player.isRetired && (
                         <FaCrown 
-                          className="mr-1.5 inline" 
+                          className="mr-2 inline" 
                           style={{ color: crownColor }}
                           size={player.rank === 1 ? 18 : 14}
                         />
                       )}
-                      <span className={player.rank <= 3 ? "hidden md:inline" : ""}>
-                        {player.rank}.
+                      <span className={`${isTopThree ? "text-white" : "text-gray-500"} ${player.rank <= 3 ? "hidden md:inline" : ""}`}>
+                        {player.rank}
                       </span>
                     </div>
                     
-                    <div className="col-span-7 flex items-center">
-                      {/* Rank Badge */}
-                      <div 
-                        className="mr-2 text-xs font-bold px-2 py-0.5 rounded-md whitespace-nowrap"
-                        style={{ 
-                          backgroundColor: playerTier.backgroundColor,
-                          color: playerTier.color,
-                          borderLeft: `2px solid ${playerTier.color}`
-                        }}
-                      >
-                        {playerTier.name}
-                      </div>
-                      
+                    <div className="col-span-5 md:col-span-6 flex items-center">
                       {/* Player Name */}
-                      <div 
-                        className="font-medium text-white hover:text-purple-300 cursor-pointer transition-colors flex items-center"
-                        onClick={() => handlePlayerClick(player)}
-                      >
+                      <div className="font-medium text-white hover:text-purple-300 transition-colors text-md">
                         {player.name}
-                        {player.isRetired && (
-                          <span className="ml-2 text-xs px-1 py-0.5 bg-gray-700 text-gray-300 rounded-md">Retired</span>
-                        )}
+                        
+                        {/* Rank Badge - Only shown on medium and larger screens */}
+                        <div className="hidden md:block mt-1">
+                          <Badge 
+                            className="text-[10px] font-normal"
+                            style={{ 
+                              backgroundColor: playerTier.backgroundColor,
+                              color: playerTier.color,
+                              borderLeft: `2px solid ${playerTier.color}`
+                            }}
+                          >
+                            {playerTier.name}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                     
+                    <div className="col-span-3 md:col-span-2 text-center">
+                      {player.isRetired ? (
+                        <Badge variant="outline" className="bg-gray-800/80 text-gray-300 border-gray-600">
+                          Retired
+                        </Badge>
+                      ) : player.recentMatches ? (
+                        <div className="flex justify-center space-x-1">
+                          {player.recentMatches.slice(-5).split('').map((result, i) => (
+                            <span 
+                              key={i} 
+                              className={`inline-block w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                                result === 'W' 
+                                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                              } animate-pulse`}
+                              style={{ animationDelay: `${i * 0.2}s` }}
+                            >
+                              {result}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-500 text-xs">No recent matches</span>
+                      )}
+                    </div>
+                    
                     <div 
-                      className={`col-span-4 text-right font-mono ${
+                      className={`col-span-3 text-right font-mono font-bold text-lg ${
                         player.isRetired
                           ? 'text-gray-400'
                           : player.rank === 1 
-                            ? 'text-yellow-400 font-bold' 
+                            ? 'text-yellow-400' 
                             : player.rank <= 3 
-                              ? 'text-purple-300 font-semibold' 
+                              ? 'text-purple-300' 
                               : 'text-gray-300'
                       }`}
                     >
-                      {player.points} pts
+                      {player.points} 
+                      <span className="text-xs font-normal ml-1 text-gray-500">pts</span>
                     </div>
                   </div>
                 );
@@ -213,71 +313,188 @@ export default function Leaderboard({ players }: LeaderboardProps) {
           </TabsContent>
 
           {/* Kills Ranking Tab */}
-          <TabsContent value="kills" className="m-0">
+          <TabsContent value="kills" className="m-0 animate-fadeIn">
             {/* Table Header */}
-            <div className="grid grid-cols-12 py-3 px-4 border-b border-gray-800 bg-gray-800/50 text-sm font-medium text-gray-400">
+            <div className="sticky top-0 z-10 grid grid-cols-12 py-3 px-5 border-b border-gray-800 backdrop-blur-sm bg-gray-900/90 text-sm font-medium text-gray-400">
               <div className="col-span-1">RANK</div>
-              <div className="col-span-7">PLAYER</div>
-              <div className="col-span-4 text-right">KILLS</div>
+              <div className="col-span-6 md:col-span-7">PLAYER</div>
+              <div className="col-span-5 md:col-span-4 text-right">KILLS</div>
             </div>
             
             {/* Player Rows */}
-            <div className="divide-y divide-gray-800/60">
+            <div className="divide-y divide-gray-800/50">
               {sortedByKills.slice(0, 20).map((player, index) => {
                 const isTopThree = index < 3;
                 const crownColor = getCrownColor(index + 1);
                 const playerTier = getPlayerRankTier(player.points, player.isRetired);
+                const isVisible = visibleRows[`kills-${player.rank}`];
+                const killValue = player.stats?.kills || 0;
                 
                 return (
                   <div 
                     key={player.rank} 
-                    className={`grid grid-cols-12 py-3 px-4 items-center hover:bg-gray-800/30 ${
+                    className={`grid grid-cols-12 py-4 px-5 items-center hover:bg-gray-800/30 ${
                       isTopThree ? 'bg-gray-800/20' : ''
-                    } hover:translate-x-1 transition-transform`}
+                    } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
+                      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`}
                     style={{ 
-                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined
+                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
+                      transitionDelay: `${index * 30}ms`
                     }}
+                    onClick={() => handlePlayerClick(player)}
                   >
-                    <div className="col-span-1 font-mono font-semibold flex items-center">
+                    <div className="col-span-1 font-mono text-lg font-semibold flex items-center">
                       {isTopThree && (
                         <FaSkull 
-                          className="mr-1.5 inline" 
+                          className="mr-2 inline animate-pulse" 
                           style={{ color: crownColor }}
                           size={index === 0 ? 18 : 14}
                         />
                       )}
-                      <span className={isTopThree ? "hidden md:inline" : ""}>
-                        {index + 1}.
+                      <span className="text-gray-500">
+                        {index + 1}
                       </span>
                     </div>
                     
-                    <div className="col-span-7 flex items-center">
-                      {/* Rank Badge */}
-                      <div 
-                        className="mr-2 text-xs font-bold px-2 py-0.5 rounded-md whitespace-nowrap"
-                        style={{ 
-                          backgroundColor: playerTier.backgroundColor,
-                          color: playerTier.color,
-                          borderLeft: `2px solid ${playerTier.color}`
-                        }}
-                      >
-                        {playerTier.name}
-                      </div>
-                      
+                    <div className="col-span-6 md:col-span-7 flex items-center">
                       {/* Player Name */}
-                      <div 
-                        className="font-medium text-white hover:text-purple-300 cursor-pointer transition-colors flex items-center"
-                        onClick={() => handlePlayerClick(player)}
-                      >
+                      <div className="font-medium text-white hover:text-purple-300 transition-colors text-md">
                         {player.name}
+                        
                         {player.isRetired && (
-                          <span className="ml-2 text-xs px-1 py-0.5 bg-gray-700 text-gray-300 rounded-md">Retired</span>
+                          <Badge variant="outline" className="ml-2 bg-gray-800/80 text-gray-300 border-gray-600 text-[10px]">
+                            Retired
+                          </Badge>
                         )}
+                        
+                        {/* Player tier badge - only on medium screens and up */}
+                        <div className="hidden md:block mt-1">
+                          <Badge 
+                            className="text-[10px] font-normal"
+                            style={{ 
+                              backgroundColor: playerTier.backgroundColor,
+                              color: playerTier.color,
+                              borderLeft: `2px solid ${playerTier.color}`
+                            }}
+                          >
+                            {playerTier.name}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="col-span-4 text-right font-mono text-purple-300">
-                      {player.stats?.kills || 0} kills
+                    <div className="col-span-5 md:col-span-4 text-right">
+                      <div className="flex flex-col items-end">
+                        <span className="font-mono text-lg font-bold text-red-400">
+                          {formatNumber(killValue)}
+                        </span>
+                        <span className="text-xs text-gray-500 mt-0.5">Total Kills</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* Win Streak Tab */}
+          <TabsContent value="winstreak" className="m-0 animate-fadeIn">
+            {/* Table Header */}
+            <div className="sticky top-0 z-10 grid grid-cols-12 py-3 px-5 border-b border-gray-800 backdrop-blur-sm bg-gray-900/90 text-sm font-medium text-gray-400">
+              <div className="col-span-1">RANK</div>
+              <div className="col-span-6 md:col-span-7">PLAYER</div>
+              <div className="col-span-5 md:col-span-4 text-right">WIN STREAK</div>
+            </div>
+            
+            {/* Player Rows */}
+            <div className="divide-y divide-gray-800/50">
+              {sortedByWinStreak.slice(0, 15).map((player, index) => {
+                const isTopThree = index < 3;
+                const crownColor = getCrownColor(index + 1);
+                const playerTier = getPlayerRankTier(player.points, player.isRetired);
+                const isVisible = visibleRows[`winstreak-${player.rank}`];
+                const streakValue = player.stats?.winStreak || 0;
+                
+                return (
+                  <div 
+                    key={player.rank} 
+                    className={`grid grid-cols-12 py-4 px-5 items-center hover:bg-gray-800/30 ${
+                      isTopThree ? 'bg-gray-800/20' : ''
+                    } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
+                      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`}
+                    style={{ 
+                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
+                      transitionDelay: `${index * 30}ms`
+                    }}
+                    onClick={() => handlePlayerClick(player)}
+                  >
+                    <div className="col-span-1 font-mono text-lg font-semibold flex items-center">
+                      {isTopThree && (
+                        <FaFireAlt 
+                          className="mr-2 inline animate-pulse" 
+                          style={{ color: crownColor }}
+                          size={index === 0 ? 18 : 14}
+                        />
+                      )}
+                      <span className="text-gray-500">
+                        {index + 1}
+                      </span>
+                    </div>
+                    
+                    <div className="col-span-6 md:col-span-7 flex items-center">
+                      {/* Player Name */}
+                      <div className="font-medium text-white hover:text-purple-300 transition-colors text-md">
+                        {player.name}
+                        
+                        {player.isRetired && (
+                          <Badge variant="outline" className="ml-2 bg-gray-800/80 text-gray-300 border-gray-600 text-[10px]">
+                            Retired
+                          </Badge>
+                        )}
+                        
+                        {/* Rank Badge on medium screens */}
+                        <div className="hidden md:block mt-1">
+                          <Badge 
+                            className="text-[10px] font-normal"
+                            style={{ 
+                              backgroundColor: playerTier.backgroundColor,
+                              color: playerTier.color,
+                              borderLeft: `2px solid ${playerTier.color}`
+                            }}
+                          >
+                            {playerTier.name}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="col-span-5 md:col-span-4 text-right">
+                      <div className="flex flex-col items-end">
+                        <div className="flex items-center justify-end">
+                          <div className="flex">
+                            {Array.from({ length: Math.min(streakValue, 5) }).map((_, i) => (
+                              <div 
+                                key={i} 
+                                className="w-3 h-5 mx-0.5"
+                                style={{ 
+                                  color: '#FF6B6B',
+                                  opacity: 1 - (i * 0.15),
+                                  animation: 'pulse 1.5s infinite',
+                                  animationDelay: `${i * 0.2}s`
+                                }}
+                              >
+                                <FaFireAlt size={12} className="text-orange-500" />
+                              </div>
+                            ))}
+                          </div>
+                          <span className="font-mono text-lg font-bold text-orange-400 ml-2">
+                            {streakValue}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500 mt-0.5">Consecutive Wins</span>
+                      </div>
                     </div>
                   </div>
                 );
@@ -286,74 +503,106 @@ export default function Leaderboard({ players }: LeaderboardProps) {
           </TabsContent>
 
           {/* Retired Players Tab */}
-          <TabsContent value="retired" className="m-0">
+          <TabsContent value="retired" className="m-0 animate-fadeIn">
             {/* Table Header */}
-            <div className="grid grid-cols-12 py-3 px-4 border-b border-gray-800 bg-gray-800/50 text-sm font-medium text-gray-400">
-              <div className="col-span-1">RANK</div>
-              <div className="col-span-7">PLAYER</div>
-              <div className="col-span-4 text-right">PEAK POINTS</div>
+            <div className="sticky top-0 z-10 grid grid-cols-12 py-3 px-5 border-b border-gray-800 backdrop-blur-sm bg-gray-900/90 text-sm font-medium text-gray-400">
+              <div className="col-span-1">#</div>
+              <div className="col-span-6 md:col-span-7">PLAYER</div>
+              <div className="col-span-5 md:col-span-4 text-right">PEAK POINTS</div>
             </div>
             
             {/* Player Rows */}
-            <div className="divide-y divide-gray-800/60">
+            <div className="divide-y divide-gray-800/50">
               {retiredPlayers.sort((a, b) => (b.peakPoints || 0) - (a.peakPoints || 0)).map((player, index) => {
                 const isTopThree = index < 3;
                 const crownColor = getCrownColor(index + 1);
+                const isVisible = visibleRows[`retired-${player.rank}`];
                 
                 return (
                   <div 
                     key={player.rank} 
-                    className={`grid grid-cols-12 py-3 px-4 items-center hover:bg-gray-800/30 ${
-                      isTopThree ? 'bg-gray-800/20' : ''
-                    } hover:translate-x-1 transition-transform`}
+                    className={`grid grid-cols-12 py-4 px-5 items-center hover:bg-gray-800/30 ${
+                      isTopThree ? 'bg-gradient-to-r from-gray-800/40 to-transparent' : ''
+                    } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
+                      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`}
                     style={{ 
-                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined
+                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
+                      transitionDelay: `${index * 30}ms`
                     }}
+                    onClick={() => handlePlayerClick(player)}
                   >
-                    <div className="col-span-1 font-mono font-semibold flex items-center">
+                    <div className="col-span-1 font-mono text-lg font-semibold flex items-center">
                       {isTopThree && (
-                        <FaUserTimes 
-                          className="mr-1.5 inline" 
+                        <FaMedal 
+                          className="mr-2 inline animate-pulse" 
                           style={{ color: crownColor }}
                           size={index === 0 ? 18 : 14}
                         />
                       )}
-                      <span className={isTopThree ? "hidden md:inline" : ""}>
-                        {index + 1}.
+                      <span className="text-gray-500">
+                        {index + 1}
                       </span>
                     </div>
                     
-                    <div className="col-span-7 flex items-center">
-                      {/* Rank Badge */}
-                      <div 
-                        className="mr-2 text-xs font-bold px-2 py-0.5 rounded-md whitespace-nowrap"
-                        style={{ 
-                          backgroundColor: "rgba(192, 192, 192, 0.15)",
-                          color: silverColor,
-                          borderLeft: `2px solid ${silverColor}`
-                        }}
-                      >
-                        Retired Legend
-                      </div>
-                      
+                    <div className="col-span-6 md:col-span-7 flex items-center">
                       {/* Player Name */}
-                      <div 
-                        className="font-medium text-white hover:text-purple-300 cursor-pointer transition-colors"
-                        onClick={() => handlePlayerClick(player)}
-                      >
-                        {player.name}
+                      <div className="font-medium text-white hover:text-purple-300 transition-colors text-md flex items-center">
+                        <div>
+                          {player.name}
+                          
+                          {/* Retired status badge */}
+                          <div className="mt-1">
+                            <Badge 
+                              className="text-[10px] font-normal"
+                              style={{ 
+                                backgroundColor: "rgba(192, 192, 192, 0.15)",
+                                color: silverColor,
+                                borderLeft: `2px solid ${silverColor}`
+                              }}
+                            >
+                              Retired Legend
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        {/* Career stat */}
+                        <div className="ml-4 hidden md:block">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center text-xs text-gray-400 hover:text-white">
+                                <FaInfoCircle className="mr-1.5 text-purple-500" />
+                                <span className="text-sm">Career Stats</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="w-60">
+                              <div className="space-y-1 p-1">
+                                <p className="text-xs"><span className="text-green-400">Wins:</span> {player.stats?.wins || 0}</p>
+                                <p className="text-xs"><span className="text-red-400">Losses:</span> {player.stats?.losses || 0}</p>
+                                <p className="text-xs"><span className="text-purple-400">Total Kills:</span> {player.stats?.kills || 0}</p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="col-span-4 text-right font-mono text-yellow-400">
-                      {player.peakPoints} pts
+                    <div className="col-span-5 md:col-span-4 text-right">
+                      <div className="flex flex-col items-end">
+                        <span className="font-mono text-xl font-bold text-yellow-400">
+                          {player.peakPoints}
+                        </span>
+                        <span className="text-xs text-gray-500 mt-0.5">All-Time Peak</span>
+                      </div>
                     </div>
                   </div>
                 );
               })}
               {retiredPlayers.length === 0 && (
-                <div className="p-8 text-center text-gray-400">
-                  No retired players found.
+                <div className="p-16 text-center text-gray-400">
+                  <FaUserTimes size={32} className="mx-auto mb-4 text-gray-600" />
+                  <p className="text-lg">No retired players found</p>
+                  <p className="text-sm text-gray-500 mt-2">Retired legends will appear here</p>
                 </div>
               )}
             </div>

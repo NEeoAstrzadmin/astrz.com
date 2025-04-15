@@ -1,5 +1,13 @@
 
+import { useEffect, useState } from "react";
 import { Player } from "@/data/players";
+import { 
+  FaTimes, FaCrown, FaUserAlt, FaTrophy, FaSkull, 
+  FaFire, FaMedal, FaChartBar, FaRegListAlt, 
+  FaRegCalendarAlt, FaShieldAlt, FaCrosshairs 
+} from "react-icons/fa";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 interface PlayerCardProps {
   player: Player;
@@ -7,97 +15,259 @@ interface PlayerCardProps {
 }
 
 export default function PlayerCard({ player, onClose }: PlayerCardProps) {
-  const getStatusColor = () => {
-    if (player.isRetired) return "text-gray-400";
-    return player.rank <= 3 ? "text-yellow-400" : "text-green-400";
-  };
+  const [progress, setProgress] = useState(0);
+  const [statAnimate, setStatAnimate] = useState(false);
+  
+  // Calculate win rate
+  const winRate = player.stats 
+    ? Math.round((player.stats.wins / (player.stats.wins + player.stats.losses || 1)) * 100) 
+    : 0;
 
-  const getStatusText = () => {
-    if (player.isRetired) return "Retired";
-    if (player.rank <= 3) return "Elite";
-    if (player.rank <= 10) return "Active - Veteran";
-    return "Active";
+  // Format large numbers with commas
+  const formatNumber = (num: number): string => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
+  
+  // Get color for rank tier
+  const getRankTierColor = () => {
+    if (player.isRetired) return { color: "#C0C0C0", bg: "rgba(192, 192, 192, 0.15)" };
+    
+    if (player.points >= 250) return { color: "#FF6B6B", bg: "rgba(255, 107, 107, 0.15)" };
+    if (player.points >= 180) return { color: "#4D96FF", bg: "rgba(77, 150, 255, 0.15)" };
+    if (player.points >= 100) return { color: "#9FE6A0", bg: "rgba(159, 230, 160, 0.15)" };
+    return { color: "#FFBD35", bg: "rgba(255, 189, 53, 0.15)" };
+  };
+  
+  // Get rank tier name
+  const getRankTierName = () => {
+    if (player.isRetired) return "Retired Legend";
+    
+    if (player.points >= 250) return "Astrz Prime";
+    if (player.points >= 180) return "Astrz Vanguard";
+    if (player.points >= 100) return "Astrz Challenger";
+    return "Astrz Edge";
+  };
+  
+  // Animation effects
+  useEffect(() => {
+    const timer = setTimeout(() => setProgress(Math.min(100, player.points / 3)), 100);
+    const statTimer = setTimeout(() => setStatAnimate(true), 300);
+    
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(statTimer);
+    };
+  }, [player.points]);
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 border border-purple-600 rounded-lg shadow-xl max-w-md w-full p-5 animate-fadeIn">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              {player.name}
-              <span className={`text-sm font-medium ${getStatusColor()}`}>
-                ({getStatusText()})
-              </span>
-            </h3>
-            <div className="flex items-center space-x-2 mt-1 flex-wrap">
-              <span className="text-gray-400 text-sm">Rank: {player.rank}</span>
-              <span className="text-gray-500">•</span>
-              <span className="text-purple-400 text-sm font-mono">{player.points} pts</span>
-              {player.isRetired && player.peakPoints && (
-                <>
-                  <span className="text-gray-500">•</span>
-                  <span className="text-yellow-400 text-sm font-mono">Peak: {player.peakPoints} pts</span>
-                </>
-              )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fadeIn">
+      <div 
+        className="relative bg-gradient-to-b from-gray-900 to-gray-950 border border-purple-900/50 rounded-xl shadow-2xl max-w-lg w-full animate-scaleIn overflow-hidden"
+        style={{ maxHeight: '90vh' }}
+      >
+        {/* Close button */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10 hover:rotate-90 transform duration-300"
+        >
+          <FaTimes size={20} />
+        </button>
+        
+        {/* Header */}
+        <div className="relative overflow-hidden">
+          {/* Background gradient effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 to-blue-900/20 z-0"></div>
+          
+          <div className="p-6 relative z-1">
+            <div className="flex items-center space-x-4">
+              <div className="bg-purple-900/40 rounded-full p-3 border border-purple-500/30 shadow-lg animate-pulse">
+                <FaUserAlt size={30} className="text-purple-300" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-2xl font-bold text-white">{player.name}</h3>
+                  {player.rank <= 3 && !player.isRetired && (
+                    <FaCrown 
+                      size={16} 
+                      className={player.rank === 1 ? "text-yellow-400" : player.rank === 2 ? "text-gray-300" : "text-amber-600"} 
+                    />
+                  )}
+                </div>
+                
+                <div className="flex items-center mt-1">
+                  <Badge 
+                    variant="outline" 
+                    className="mr-2 text-xs px-2 py-0.5"
+                    style={{ 
+                      backgroundColor: getRankTierColor().bg,
+                      color: getRankTierColor().color,
+                      borderColor: `${getRankTierColor().color}50`
+                    }}
+                  >
+                    {getRankTierName()}
+                  </Badge>
+                  
+                  <span className="text-sm text-gray-400">Rank #{player.rank}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Points bar */}
+            <div className="mt-5">
+              <div className="flex justify-between items-center mb-1.5 text-sm">
+                <div className="text-gray-400 flex items-center">
+                  <FaTrophy size={12} className="text-yellow-500 mr-1.5" />
+                  Combat Points
+                </div>
+                <div className="font-mono font-medium text-white">
+                  {player.isRetired && player.peakPoints 
+                    ? (
+                      <span>
+                        <span className="text-gray-300">{player.points}</span>
+                        <span className="text-gray-500 mx-1">/</span>
+                        <span className="text-yellow-400">{player.peakPoints}</span>
+                        <span className="text-xs text-gray-500 ml-1">(Peak)</span>
+                      </span>
+                    )
+                    : (
+                      <span className="text-purple-300">{player.points} 
+                        <span className="text-xs text-gray-500 ml-1">pts</span>
+                      </span>
+                    )
+                  }
+                </div>
+              </div>
+              <Progress 
+                value={progress} 
+                className="h-2.5 bg-gray-800" 
+              />
             </div>
           </div>
-          <button 
-            className="text-gray-400 hover:text-white"
-            onClick={onClose}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
         </div>
-
-        {player.isRetired && player.peakPoints && (
-          <div className="bg-gray-800/30 p-3 rounded-lg mb-4 border-l-2 border-yellow-400">
-            <div className="text-yellow-400 text-sm font-semibold mb-1">Retired Player</div>
-            <p className="text-gray-300 text-sm">
-              This legendary player reached a peak of <span className="text-yellow-400 font-mono">{player.peakPoints} points</span> before retirement.
-            </p>
-          </div>
-        )}
-
-        {player.stats && (
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="space-y-2">
-              <div className="bg-gray-800/50 p-3 rounded-lg">
-                <span className="text-gray-400 text-sm">Wins</span>
-                <p className="text-green-400 font-mono text-lg">{player.stats.wins}</p>
-              </div>
-              <div className="bg-gray-800/50 p-3 rounded-lg">
-                <span className="text-gray-400 text-sm">Losses</span>
-                <p className="text-red-400 font-mono text-lg">{player.stats.losses}</p>
-              </div>
-              <div className="bg-gray-800/50 p-3 rounded-lg">
-                <span className="text-gray-400 text-sm">Win Streak</span>
-                <p className="text-yellow-400 font-mono text-lg">{player.stats.winStreak}</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="bg-gray-800/50 p-3 rounded-lg">
-                <span className="text-gray-400 text-sm">Kills</span>
-                <p className="text-purple-400 font-mono text-lg">{player.stats.kills}</p>
-              </div>
-              <div className="bg-gray-800/50 p-3 rounded-lg">
-                <span className="text-gray-400 text-sm">Team Champion</span>
-                <p className="text-blue-400 font-mono text-lg">{player.stats.teamChampion}</p>
-              </div>
-              <div className="bg-gray-800/50 p-3 rounded-lg">
-                <span className="text-gray-400 text-sm">MC SAT Champion</span>
-                <p className="text-orange-400 font-mono text-lg">{player.stats.mcSatChampion}</p>
+        
+        {/* Stats area with scrollable content */}
+        <div className="p-5 space-y-5 overflow-y-auto max-h-[50vh] styled-scrollbar">
+          {/* Match record */}
+          {player.stats && (
+            <div className={`transition-all duration-500 ${statAnimate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <h4 className="text-sm text-gray-400 mb-3 flex items-center">
+                <FaChartBar className="mr-2 text-purple-400" />
+                Match Statistics
+              </h4>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-gradient-to-b from-green-900/20 to-green-900/10 p-4 rounded-lg border border-green-700/20">
+                  <div className="text-green-400 font-bold text-2xl">{player.stats.wins}</div>
+                  <div className="text-xs text-gray-400 mt-1">Wins</div>
+                </div>
+                <div className="bg-gradient-to-b from-red-900/20 to-red-900/10 p-4 rounded-lg border border-red-700/20">
+                  <div className="text-red-400 font-bold text-2xl">{player.stats.losses}</div>
+                  <div className="text-xs text-gray-400 mt-1">Losses</div>
+                </div>
+                <div className="bg-gradient-to-b from-blue-900/20 to-blue-900/10 p-4 rounded-lg border border-blue-700/20">
+                  <div className="text-blue-400 font-bold text-2xl">{winRate}%</div>
+                  <div className="text-xs text-gray-400 mt-1">Win Rate</div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-
-        <div className="mt-6 pt-4 border-t border-gray-800">
-          <button 
-            className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+          )}
+          
+          {/* Recent matches */}
+          {player.recentMatches && !player.isRetired && (
+            <div className={`transition-all duration-500 delay-100 ${statAnimate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <h4 className="text-sm text-gray-400 mb-3 flex items-center">
+                <FaRegCalendarAlt className="mr-2 text-purple-400" />
+                Recent Match History
+              </h4>
+              <div className="flex space-x-2 justify-center bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
+                {player.recentMatches.split('').map((result, index) => (
+                  <div 
+                    key={index}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                      result === 'W' 
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    } animate-pulse`}
+                    style={{ animationDelay: `${index * 0.15}s` }}
+                  >
+                    {result}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Achievements */}
+          {player.stats && (
+            <div className={`transition-all duration-500 delay-200 ${statAnimate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <h4 className="text-sm text-gray-400 mb-3 flex items-center">
+                <FaRegListAlt className="mr-2 text-purple-400" />
+                Combat Statistics
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 transition-colors">
+                  <div className="bg-red-900/30 p-2 rounded-full">
+                    <FaSkull className="text-red-400" size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-400">Total Kills</div>
+                    <div className="font-bold text-white text-lg">{formatNumber(player.stats.kills || 0)}</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 transition-colors">
+                  <div className="bg-orange-900/30 p-2 rounded-full">
+                    <FaFire className="text-orange-400" size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-400">Win Streak</div>
+                    <div className="font-bold text-white text-lg">{player.stats.winStreak}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Achievements */}
+          {player.stats && (
+            <div className={`transition-all duration-500 delay-300 ${statAnimate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <h4 className="text-sm text-gray-400 mb-3 flex items-center">
+                <FaMedal className="mr-2 text-purple-400" />
+                Achievements
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 transition-colors">
+                  <div className="bg-yellow-900/30 p-2 rounded-full">
+                    <FaShieldAlt className="text-yellow-400" size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-400">Team Champion</div>
+                    <div className="font-bold text-white text-lg">
+                      {player.stats.teamChampion}
+                      {player.stats.teamChampion > 0 && <span className="text-xs text-gray-500 ml-1">time{player.stats.teamChampion > 1 ? 's' : ''}</span>}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 transition-colors">
+                  <div className="bg-blue-900/30 p-2 rounded-full">
+                    <FaCrosshairs className="text-blue-400" size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-400">MC SAT Champion</div>
+                    <div className="font-bold text-white text-lg">
+                      {player.stats.mcSatChampion}
+                      {player.stats.mcSatChampion > 0 && <span className="text-xs text-gray-500 ml-1">time{player.stats.mcSatChampion > 1 ? 's' : ''}</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-800/50 text-center bg-gray-900/80">
+          <button
             onClick={onClose}
+            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-md transition-all transform hover:scale-105 font-medium shadow-lg"
           >
             Close
           </button>
