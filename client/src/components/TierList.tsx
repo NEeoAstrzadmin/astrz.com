@@ -3,7 +3,8 @@ import PlayerCard from "./PlayerCard";
 import { Player } from "@/data/players";
 import { 
   FaCrown, FaTrophy, FaSkull, FaFireAlt, FaUserTimes, 
-  FaChartLine, FaCog, FaInfoCircle, FaMedal 
+  FaChartLine, FaCog, FaInfoCircle, FaMedal,
+  FaShieldAlt, FaBolt, FaFighterJet
 } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
@@ -205,8 +206,8 @@ export default function Leaderboard({ players }: LeaderboardProps) {
             {/* Table Header */}
             <div className="sticky top-0 z-10 grid grid-cols-12 py-3 px-5 border-b border-gray-800 backdrop-blur-sm bg-gray-900/90 text-sm font-medium text-gray-400">
               <div className="col-span-1">RANK</div>
-              <div className="col-span-5 md:col-span-6">PLAYER</div>
-              <div className="col-span-3 md:col-span-2 text-center">STATUS</div>
+              <div className="col-span-5 md:col-span-4">PLAYER</div>
+              <div className="col-span-3 md:col-span-4 text-center">COMBAT BADGE</div>
               <div className="col-span-3 text-right">POINTS</div>
             </div>
             
@@ -266,30 +267,42 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                       </div>
                     </div>
                     
-                    <div className="col-span-3 md:col-span-2 text-center">
-                      {player.isRetired ? (
-                        <Badge variant="outline" className="bg-gray-800/80 text-gray-300 border-gray-600">
-                          Retired
-                        </Badge>
-                      ) : player.recentMatches ? (
-                        <div className="flex justify-center space-x-1">
-                          {player.recentMatches.slice(-5).split('').map((result, i) => (
-                            <span 
-                              key={i} 
-                              className={`inline-block w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
-                                result === 'W' 
-                                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                              } animate-pulse`}
-                              style={{ animationDelay: `${i * 0.2}s` }}
+                    <div className="col-span-3 md:col-span-4 text-center">
+                      <div className="flex items-center justify-center">
+                        {/* Combat Badge */}
+                        {player.isRetired ? (
+                          <div className="flex items-center justify-center bg-gray-800/40 rounded-lg px-3 py-1.5 border border-gray-600/30">
+                            <div className="bg-gray-700/70 rounded-full p-1.5 mr-2 animate-pulse">
+                              <FaMedal className="text-gray-300" size={14} />
+                            </div>
+                            <span className="text-sm font-medium text-gray-300">Retired Legend</span>
+                          </div>
+                        ) : (
+                          <div 
+                            className="flex items-center justify-center rounded-lg px-3 py-1.5 border animate-shimmer" 
+                            style={{ 
+                              backgroundColor: `${playerTier.backgroundColor}90`,
+                              borderColor: `${playerTier.color}40`
+                            }}
+                          >
+                            <div 
+                              className="rounded-full p-1.5 mr-2 animate-pulse" 
+                              style={{ backgroundColor: `${playerTier.color}30` }}
                             >
-                              {result}
+                              {playerTier.name === "Astrz Prime" && <FaCrown className="text-yellow-400" size={14} />}
+                              {playerTier.name === "Astrz Vanguard" && <FaSkull className="text-blue-400" size={14} />}
+                              {playerTier.name === "Astrz Challenger" && <FaFireAlt className="text-green-400" size={14} />}
+                              {playerTier.name === "Astrz Edge" && <FaTrophy className="text-orange-400" size={14} />}
+                            </div>
+                            <span 
+                              className="text-sm font-medium" 
+                              style={{ color: playerTier.color }}
+                            >
+                              {playerTier.name}
                             </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-gray-500 text-xs">No recent matches</span>
-                      )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     
                     <div 
@@ -568,21 +581,23 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                         
                         {/* Career stat */}
                         <div className="ml-4 hidden md:block">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex items-center text-xs text-gray-400 hover:text-white">
-                                <FaInfoCircle className="mr-1.5 text-purple-500" />
-                                <span className="text-sm">Career Stats</span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent side="right" className="w-60">
-                              <div className="space-y-1 p-1">
-                                <p className="text-xs"><span className="text-green-400">Wins:</span> {player.stats?.wins || 0}</p>
-                                <p className="text-xs"><span className="text-red-400">Losses:</span> {player.stats?.losses || 0}</p>
-                                <p className="text-xs"><span className="text-purple-400">Total Kills:</span> {player.stats?.kills || 0}</p>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center text-xs text-gray-400 hover:text-white">
+                                  <FaInfoCircle className="mr-1.5 text-purple-500" />
+                                  <span className="text-sm">Career Stats</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="right" className="w-60">
+                                <div className="space-y-1 p-1">
+                                  <p className="text-xs"><span className="text-green-400">Wins:</span> {player.stats?.wins || 0}</p>
+                                  <p className="text-xs"><span className="text-red-400">Losses:</span> {player.stats?.losses || 0}</p>
+                                  <p className="text-xs"><span className="text-purple-400">Total Kills:</span> {player.stats?.kills || 0}</p>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </div>
                     </div>
