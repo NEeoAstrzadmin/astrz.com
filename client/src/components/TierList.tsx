@@ -68,19 +68,22 @@ export default function Leaderboard({ players }: LeaderboardProps) {
     setShowPlayerCard(true);
   };
 
-  // Sort by different criteria
-  const sortedByRank = [...players].sort((a, b) => a.rank - b.rank);
-  const sortedByKills = [...players].sort((a, b) => {
+  // Filter out retired players for active leaderboards
+  const activePlayers = players.filter(player => !player.isRetired);
+  const retiredPlayers = players.filter(player => player.isRetired);
+  
+  // Sort by different criteria (excluding retired players from main leaderboards)
+  const sortedByRank = [...activePlayers].sort((a, b) => a.rank - b.rank);
+  const sortedByKills = [...activePlayers].sort((a, b) => {
     if (!a.stats?.kills) return 1;
     if (!b.stats?.kills) return -1;
     return b.stats.kills - a.stats.kills;
   });
-  const sortedByWinStreak = [...players].sort((a, b) => {
+  const sortedByWinStreak = [...activePlayers].sort((a, b) => {
     if (!a.stats?.winStreak) return 1;
     if (!b.stats?.winStreak) return -1;
     return b.stats.winStreak - a.stats.winStreak;
   });
-  const retiredPlayers = [...players].filter(player => player.isRetired);
 
   // Staggered animation on mount
   useEffect(() => {

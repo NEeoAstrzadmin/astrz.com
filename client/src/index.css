@@ -155,7 +155,41 @@
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:bg-gray-800/40 hover:border-purple-500/50;
+    @apply transition-all duration-300 hover:bg-gray-800/40 hover:border-purple-500/50 relative;
+  }
+  
+  .card-hover:hover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(156, 39, 176, 0.15) 0%, rgba(103, 58, 183, 0.15) 100%);
+    border-radius: 0.3rem;
+    transform: scale(1.02);
+    animation: pulseGlow 1.5s infinite alternate;
+  }
+  
+  @keyframes pulseGlow {
+    0% {
+      box-shadow: 0 0 5px 0 rgba(156, 39, 176, 0.3);
+    }
+    100% {
+      box-shadow: 0 0 15px 5px rgba(156, 39, 176, 0.5);
+    }
+  }
+  
+  .float-on-hover:hover {
+    animation: floatHover 0.4s ease forwards;
+  }
+  
+  @keyframes floatHover {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-5px);
+    }
   }
   
   .badge {

@@ -155,46 +155,43 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                 Match Statistics
               </h4>
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-gradient-to-b from-green-900/20 to-green-900/10 p-4 rounded-lg border border-green-700/20">
+                <div className="bg-gradient-to-b from-green-900/20 to-green-900/10 p-4 rounded-lg border border-green-700/20 hover:border-green-500/50 transition-all float-on-hover">
                   <div className="text-green-400 font-bold text-2xl">{player.stats.wins}</div>
                   <div className="text-xs text-gray-400 mt-1">Wins</div>
+                  <div className="h-1 mt-2 bg-gray-800 rounded-full overflow-hidden w-full">
+                    <div 
+                      className="h-full bg-gradient-to-r from-green-500 to-green-400 animate-shimmer"
+                      style={{ width: `${Math.min(100, (player.stats.wins / (player.stats.wins + player.stats.losses)) * 100)}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="bg-gradient-to-b from-red-900/20 to-red-900/10 p-4 rounded-lg border border-red-700/20">
+                <div className="bg-gradient-to-b from-red-900/20 to-red-900/10 p-4 rounded-lg border border-red-700/20 hover:border-red-500/50 transition-all float-on-hover">
                   <div className="text-red-400 font-bold text-2xl">{player.stats.losses}</div>
                   <div className="text-xs text-gray-400 mt-1">Losses</div>
+                  <div className="h-1 mt-2 bg-gray-800 rounded-full overflow-hidden w-full">
+                    <div 
+                      className="h-full bg-gradient-to-r from-red-500 to-red-400 animate-shimmer"
+                      style={{ width: `${Math.min(100, (player.stats.losses / (player.stats.wins + player.stats.losses)) * 100)}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="bg-gradient-to-b from-blue-900/20 to-blue-900/10 p-4 rounded-lg border border-blue-700/20">
+                <div className="bg-gradient-to-b from-blue-900/20 to-blue-900/10 p-4 rounded-lg border border-blue-700/20 hover:border-blue-500/50 transition-all float-on-hover">
                   <div className="text-blue-400 font-bold text-2xl">{winRate}%</div>
                   <div className="text-xs text-gray-400 mt-1">Win Rate</div>
+                  <div className="flex justify-center mt-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div 
+                        key={i} 
+                        className={`w-2 h-2 mx-0.5 rounded-full ${i < Math.floor(winRate / 20) ? 'bg-blue-400' : 'bg-gray-700'}`}
+                      ></div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           )}
           
-          {/* Recent matches */}
-          {player.recentMatches && !player.isRetired && (
-            <div className={`transition-all duration-500 delay-100 ${statAnimate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <h4 className="text-sm text-gray-400 mb-3 flex items-center">
-                <FaRegCalendarAlt className="mr-2 text-purple-400" />
-                Recent Match History
-              </h4>
-              <div className="flex space-x-2 justify-center bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
-                {player.recentMatches.split('').map((result, index) => (
-                  <div 
-                    key={index}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                      result === 'W' 
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    } animate-pulse`}
-                    style={{ animationDelay: `${index * 0.15}s` }}
-                  >
-                    {result}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Removed recent match history as requested */}
           
           {/* Achievements */}
           {player.stats && (
@@ -204,22 +201,52 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                 Combat Statistics
               </h4>
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 transition-colors">
-                  <div className="bg-red-900/30 p-2 rounded-full">
+                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 hover:border-red-500/40 transition-all float-on-hover">
+                  <div className="bg-red-900/30 p-2 rounded-full animate-pulse">
                     <FaSkull className="text-red-400" size={16} />
                   </div>
-                  <div>
+                  <div className="w-full">
                     <div className="text-xs text-gray-400">Total Kills</div>
-                    <div className="font-bold text-white text-lg">{formatNumber(player.stats.kills || 0)}</div>
+                    <div className="font-bold text-white text-lg flex items-center">
+                      {formatNumber(player.stats.kills || 0)}
+                      <div className="ml-2 flex items-end">
+                        {Array.from({ length: Math.min(5, Math.ceil((player.stats.kills || 0) / 80)) }).map((_, i) => (
+                          <div 
+                            key={i} 
+                            className="w-1 mx-0.5 bg-red-500 rounded-t-sm"
+                            style={{ 
+                              height: `${4 + (i * 2)}px`,
+                              opacity: 1 - (i * 0.15)
+                            }}
+                          ></div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 transition-colors">
-                  <div className="bg-orange-900/30 p-2 rounded-full">
+                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 hover:border-orange-500/40 transition-all float-on-hover">
+                  <div className="bg-orange-900/30 p-2 rounded-full animate-pulse">
                     <FaFire className="text-orange-400" size={16} />
                   </div>
-                  <div>
+                  <div className="w-full">
                     <div className="text-xs text-gray-400">Win Streak</div>
-                    <div className="font-bold text-white text-lg">{player.stats.winStreak}</div>
+                    <div className="font-bold text-white text-lg flex items-center">
+                      {player.stats.winStreak}
+                      <div className="ml-2 flex">
+                        {Array.from({ length: Math.min(5, player.stats.winStreak) }).map((_, i) => (
+                          <div 
+                            key={i} 
+                            style={{ 
+                              opacity: 1 - (i * 0.2),
+                              animation: 'pulse 1.5s infinite',
+                              animationDelay: `${i * 0.2}s`
+                            }}
+                          >
+                            <FaFire size={10} className="text-orange-500 mx-0.5" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -234,8 +261,8 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                 Achievements
               </h4>
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 transition-colors">
-                  <div className="bg-yellow-900/30 p-2 rounded-full">
+                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 hover:border-yellow-500/40 transition-all float-on-hover">
+                  <div className="bg-yellow-900/30 p-2 rounded-full animate-pulse">
                     <FaShieldAlt className="text-yellow-400" size={16} />
                   </div>
                   <div>
@@ -244,10 +271,28 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                       {player.stats.teamChampion}
                       {player.stats.teamChampion > 0 && <span className="text-xs text-gray-500 ml-1">time{player.stats.teamChampion > 1 ? 's' : ''}</span>}
                     </div>
+                    {player.stats.teamChampion > 0 && (
+                      <div className="flex mt-1">
+                        {Array.from({ length: Math.min(3, player.stats.teamChampion) }).map((_, i) => (
+                          <div key={i} className="mr-1">
+                            <FaMedal 
+                              size={10} 
+                              className="text-yellow-500" 
+                              style={{ 
+                                opacity: 1 - (i * 0.3),
+                                animation: 'pulse 1.5s infinite',
+                                animationDelay: `${i * 0.2}s`
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 transition-colors">
-                  <div className="bg-blue-900/30 p-2 rounded-full">
+                
+                <div className="flex items-center space-x-3 bg-gray-800/30 p-3 rounded-lg border border-gray-700/30 hover:bg-gray-800/50 hover:border-blue-500/40 transition-all float-on-hover">
+                  <div className="bg-blue-900/30 p-2 rounded-full animate-pulse">
                     <FaCrosshairs className="text-blue-400" size={16} />
                   </div>
                   <div>
@@ -256,6 +301,23 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                       {player.stats.mcSatChampion}
                       {player.stats.mcSatChampion > 0 && <span className="text-xs text-gray-500 ml-1">time{player.stats.mcSatChampion > 1 ? 's' : ''}</span>}
                     </div>
+                    {player.stats.mcSatChampion > 0 && (
+                      <div className="flex mt-1">
+                        {Array.from({ length: Math.min(3, player.stats.mcSatChampion) }).map((_, i) => (
+                          <div key={i} className="mr-1">
+                            <FaTrophy 
+                              size={9} 
+                              className="text-blue-400" 
+                              style={{ 
+                                opacity: 1 - (i * 0.3),
+                                animation: 'pulse 1.5s infinite',
+                                animationDelay: `${i * 0.2}s`
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
