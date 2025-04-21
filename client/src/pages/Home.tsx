@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Leaderboard from "@/components/TierList"; // We're keeping the file name but changing the component
 import Footer from "@/components/Footer";
 import { useState } from "react";
-import { usePlayers } from "@/stores/playerStore";
+import { usePlayers } from "@/hooks/usePlayers";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");

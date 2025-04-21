@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Player, players } from "@/data/players";
+import { Player, players, notifyPlayerChanges } from "@/data/players";
+import { usePlayers } from "@/hooks/usePlayers";
 import { FaCrown, FaUserEdit, FaTrash, FaArrowLeft, FaPlus, FaSave, FaUserCog } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,11 @@ export default function Admin() {
   const [newPlayerMode, setNewPlayerMode] = useState(false);
 
   // Form state for player data
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Omit<Player, 'stats'> & { 
+    stats: NonNullable<Player['stats']>;
+    recentMatches: string;
+    peakPoints: number;
+  }>({
     rank: 0,
     name: "",
     points: 0,
@@ -63,13 +68,15 @@ export default function Admin() {
     if (name.includes('.')) {
       // Handle nested properties (stats)
       const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof typeof prev],
-          [child]: type === 'number' ? Number(value) : value
-        }
-      }));
+      if (parent === 'stats') {
+        setFormData(prev => ({
+          ...prev,
+          stats: {
+            ...prev.stats,
+            [child]: type === 'number' ? Number(value) : value
+          }
+        }));
+      }
     } else {
       // Handle top-level properties
       setFormData(prev => ({
@@ -152,21 +159,44 @@ export default function Admin() {
   };
 
   const handleSaveChanges = () => {
-    // In a real app, this would send data to an API
-    // For this demo, just display what would be saved
+    // For this demo, update the players array directly
     console.log("Saving player data:", formData);
-    alert("In a real application, this would save the player data to the database.");
+    
+    if (newPlayerMode) {
+      // Add new player
+      players.push(formData as Player);
+    } else {
+      // Update existing player
+      const playerIndex = players.findIndex(p => p.rank === formData.rank);
+      if (playerIndex !== -1) {
+        players[playerIndex] = formData as Player;
+      }
+    }
+    
+    // Notify all subscribers of the change
+    notifyPlayerChanges();
+    
+    // Show feedback and reset UI state
+    alert("Player data has been updated!");
     setEditMode(false);
     setNewPlayerMode(false);
   };
 
   const handleDeletePlayer = () => {
-    // In a real app, this would send a delete request to an API
     if (selectedPlayerId) {
       const confirmed = window.confirm("Are you sure you want to delete this player?");
       if (confirmed) {
         console.log("Deleting player with rank:", selectedPlayerId);
-        alert("In a real application, this would delete the player from the database.");
+        
+        // Find the index of the player in the array and remove it
+        const playerIndex = players.findIndex(p => p.rank === selectedPlayerId);
+        if (playerIndex !== -1) {
+          players.splice(playerIndex, 1);
+          notifyPlayerChanges();
+          alert("Player has been deleted!");
+        }
+        
+        // Reset the form and selection
         setSelectedPlayerId(null);
         setFormData({
           rank: 0,
