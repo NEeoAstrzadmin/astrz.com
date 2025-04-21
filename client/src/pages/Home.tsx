@@ -2,11 +2,11 @@ import Header from "@/components/Header";
 import Leaderboard from "@/components/TierList"; // We're keeping the file name but changing the component
 import Footer from "@/components/Footer";
 import { useState } from "react";
-import { usePlayers } from "@/contexts/PlayerContext";
+import { usePlayers } from "@/stores/playerStore";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { players } = usePlayers();
+  const players = usePlayers();
 
   const filteredPlayers = searchTerm 
     ? players.filter(player => 

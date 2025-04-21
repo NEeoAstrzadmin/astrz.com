@@ -16,6 +16,27 @@ export interface Player {
   }
 }
 
+// Event system for player data changes
+type Listener = () => void;
+const listeners: Listener[] = [];
+
+// Subscribe to player data changes
+export const subscribeToPlayerChanges = (listener: Listener) => {
+  listeners.push(listener);
+  return () => {
+    const index = listeners.indexOf(listener);
+    if (index > -1) {
+      listeners.splice(index, 1);
+    }
+  };
+};
+
+// Notify all listeners of player data changes
+export const notifyPlayerChanges = () => {
+  listeners.forEach(listener => listener());
+};
+
+// Export mutable players array
 export const players: Player[] = [
   { 
     rank: 1, 
