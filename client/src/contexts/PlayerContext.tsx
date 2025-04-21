@@ -1,54 +1,109 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Player, players as initialPlayers } from "@/data/players";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { 
+  Player, 
+  fetchPlayers, 
+  createPlayer as apiCreatePlayer,
+  updatePlayer as apiUpdatePlayer,
+  deletePlayer as apiDeletePlayer 
+} from "@/data/players";
 
 interface PlayerContextType {
-  players: Player[];
-  addPlayer: (player: Player) => void;
-  updatePlayer: (player: Player) => void;
-  deletePlayer: (rank: number) => void;
+  activePlayers: Player[];
+  retiredPlayers: Player[];
+  allPlayers: Player[];
+  loading: boolean;
+  error: string | null;
+  addPlayer: (player: Omit<Player, 'id'>) => Promise<void>;
+  updatePlayer: (player: Player) => Promise<void>;
+  deletePlayer: (id: number) => Promise<void>;
+  refreshPlayers: () => Promise<void>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  const [players, setPlayers] = useState<Player[]>(initialPlayers);
+  const [activePlayers, setActivePlayers] = useState<Player[]>([]);
+  const [retiredPlayers, setRetiredPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const addPlayer = (newPlayer: Player) => {
-    setPlayers((currentPlayers) => {
-      // Generate a valid rank if not provided
-      if (!newPlayer.rank) {
-        const maxRank = Math.max(...currentPlayers.map(p => p.rank));
-        newPlayer.rank = maxRank + 1;
-      }
-      return [...currentPlayers, newPlayer];
-    });
+  const refreshPlayers = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchPlayers();
+      setActivePlayers(data.active);
+      setRetiredPlayers(data.retired);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching players:', err);
+      setError('Failed to load players. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updatePlayer = (updatedPlayer: Player) => {
-    setPlayers((currentPlayers) =>
-      currentPlayers.map((player) =>
-        player.rank === updatedPlayer.rank ? updatedPlayer : player
-      )
-    );
+  useEffect(() => {
+    refreshPlayers();
+    
+    // Set up an interval to refresh the data every 30 seconds
+    const intervalId = setInterval(refreshPlayers, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const addPlayer = async (newPlayer: Omit<Player, 'id'>) => {
+    try {
+      await apiCreatePlayer(newPlayer);
+      await refreshPlayers();
+    } catch (err) {
+      console.error('Error adding player:', err);
+      setError('Failed to add player. Please try again.');
+    }
   };
 
-  const deletePlayer = (rank: number) => {
-    setPlayers((currentPlayers) =>
-      currentPlayers.filter((player) => player.rank !== rank)
-    );
+  const updatePlayer = async (player: Player) => {
+    try {
+      await apiUpdatePlayer(player.id, player);
+      await refreshPlayers();
+    } catch (err) {
+      console.error('Error updating player:', err);
+      setError('Failed to update player. Please try again.');
+    }
   };
+
+  const deletePlayer = async (id: number) => {
+    try {
+      await apiDeletePlayer(id);
+      await refreshPlayers();
+    } catch (err) {
+      console.error('Error deleting player:', err);
+      setError('Failed to delete player. Please try again.');
+    }
+  };
+
+  const allPlayers = [...activePlayers, ...retiredPlayers];
 
   return (
-    <PlayerContext.Provider value={{ players, addPlayer, updatePlayer, deletePlayer }}>
+    <PlayerContext.Provider value={{ 
+      activePlayers, 
+      retiredPlayers, 
+      allPlayers,
+      loading, 
+      error, 
+      addPlayer, 
+      updatePlayer, 
+      deletePlayer,
+      refreshPlayers
+    }}>
       {children}
     </PlayerContext.Provider>
   );
 }
 
-export function usePlayers() {
+export function usePlayerContext() {
   const context = useContext(PlayerContext);
   if (context === undefined) {
-    throw new Error("usePlayers must be used within a PlayerProvider");
+    throw new Error("usePlayerContext must be used within a PlayerProvider");
   }
   return context;
 }

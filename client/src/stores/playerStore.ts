@@ -1,54 +1,27 @@
-import { Player, players as initialPlayers } from "@/data/players";
-import { useState, useEffect } from "react";
+import { Player } from "@/data/players";
 
-// Store the players list in a module-scoped variable
-let players = [...initialPlayers];
-let listeners: (() => void)[] = [];
+/**
+ * NOTE: This store is deprecated in favor of using the PlayerContext
+ * See client/src/contexts/PlayerContext.tsx for the new implementation
+ * 
+ * This file is kept only for reference and compatibility with existing code.
+ */
 
-// Function to notify all listeners when the players list changes
-const notifyListeners = () => {
-  listeners.forEach(listener => listener());
+// Placeholder exports to avoid breaking changes
+export const addPlayer = (_newPlayer: Omit<Player, 'id'>) => {
+  console.warn('playerStore is deprecated, use PlayerContext instead');
 };
 
-// Add a player to the list
-export const addPlayer = (newPlayer: Player) => {
-  // Generate a valid rank if not provided
-  if (!newPlayer.rank) {
-    const maxRank = Math.max(...players.map(p => p.rank));
-    newPlayer.rank = maxRank + 1;
-  }
-  players = [...players, newPlayer];
-  notifyListeners();
+export const updatePlayer = (_updatedPlayer: Player) => {
+  console.warn('playerStore is deprecated, use PlayerContext instead');
 };
 
-// Update a player in the list
-export const updatePlayer = (updatedPlayer: Player) => {
-  players = players.map(player =>
-    player.rank === updatedPlayer.rank ? updatedPlayer : player
-  );
-  notifyListeners();
+export const deletePlayer = (_id: number) => {
+  console.warn('playerStore is deprecated, use PlayerContext instead');
 };
 
-// Delete a player from the list
-export const deletePlayer = (rank: number) => {
-  players = players.filter(player => player.rank !== rank);
-  notifyListeners();
-};
-
-// Hook to subscribe to changes in the players list
+// Empty array to avoid breaking existing code
 export const usePlayers = () => {
-  const [state, setState] = useState(players);
-
-  useEffect(() => {
-    // Add listener
-    const listener = () => setState([...players]);
-    listeners.push(listener);
-
-    // Return cleanup function to remove listener
-    return () => {
-      listeners = listeners.filter(l => l !== listener);
-    };
-  }, []);
-
-  return state;
+  console.warn('playerStore is deprecated, use PlayerContext instead');
+  return [] as Player[];
 };

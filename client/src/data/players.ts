@@ -1,4 +1,5 @@
 export interface Player {
+  id: number;
   rank: number;
   name: string;
   points: number;
@@ -6,38 +7,107 @@ export interface Player {
   isRetired?: boolean;
   peakPoints?: number;
   combatTitle?: string;
-  stats?: {
-    wins: number;
-    losses: number;
-    winStreak: number;
-    kills: number;
-    teamChampion: number;
-    mcSatChampion: number;
-  }
+  // Stats now directly on the player object
+  wins?: number;
+  losses?: number;
+  winStreak?: number;
+  kills?: number;
+  teamChampion?: number;
+  mcSatChampion?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-// Event system for player data changes
-type Listener = () => void;
-const listeners: Listener[] = [];
-
-// Subscribe to player data changes
-export const subscribeToPlayerChanges = (listener: Listener) => {
-  listeners.push(listener);
-  return () => {
-    const index = listeners.indexOf(listener);
-    if (index > -1) {
-      listeners.splice(index, 1);
-    }
-  };
+// Export API functions for player data
+export const fetchPlayers = async (): Promise<{ active: Player[], retired: Player[] }> => {
+  const response = await fetch('/api/players');
+  if (!response.ok) {
+    throw new Error('Failed to fetch players');
+  }
+  return await response.json();
 };
 
-// Notify all listeners of player data changes
-export const notifyPlayerChanges = () => {
-  listeners.forEach(listener => listener());
+export const fetchPlayer = async (id: number): Promise<Player> => {
+  const response = await fetch(`/api/players/${id}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch player');
+  }
+  return await response.json();
 };
 
-// Export mutable players array
-export const players: Player[] = [
+export const createPlayer = async (player: Omit<Player, 'id'>): Promise<Player> => {
+  const response = await fetch('/api/players', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(player),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to create player');
+  }
+  return await response.json();
+};
+
+export const updatePlayer = async (id: number, player: Partial<Player>): Promise<Player> => {
+  const response = await fetch(`/api/players/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(player),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update player');
+  }
+  return await response.json();
+};
+
+export const deletePlayer = async (id: number): Promise<void> => {
+  const response = await fetch(`/api/players/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete player');
+  }
+};
+
+export const recordMatch = async (winnerId: number, loserId: number, winnerKills: number = 0): Promise<void> => {
+  const response = await fetch('/api/matches', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ winnerId, loserId, winnerKills }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to record match');
+  }
+};
+
+// Example data structure for reference (not used in actual app)
+/*
+Example player structure:
+{
+  id: 1,
+  rank: 1,
+  name: "PlayerName",
+  points: 300,
+  recentMatches: "WWLWW",
+  isRetired: false,
+  peakPoints: 350,
+  combatTitle: "Champion",
+  wins: 50,
+  losses: 10,
+  winStreak: 3,
+  kills: 150,
+  teamChampion: 2,
+  mcSatChampion: 1
+}
+*/
+
+// The following is commented out as it's just for reference
+/*
   { 
     rank: 1, 
     name: "Wido", 
@@ -477,3 +547,4 @@ export const players: Player[] = [
     }
   }
 ];
+*/

@@ -2,17 +2,17 @@ import Header from "@/components/Header";
 import Leaderboard from "@/components/TierList"; // We're keeping the file name but changing the component
 import Footer from "@/components/Footer";
 import { useState } from "react";
-import { usePlayers } from "@/hooks/usePlayers";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
-  const players = usePlayers();
+  const { activePlayers, loading, error } = usePlayerContext();
 
   const filteredPlayers = searchTerm 
-    ? players.filter(player => 
+    ? activePlayers.filter((player) => 
         player.name.toLowerCase().includes(searchTerm.toLowerCase())
       ) 
-    : players;
+    : activePlayers;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black font-sans antialiased">
@@ -72,7 +72,25 @@ export default function Home() {
           </div>
         </section>
 
-        <Leaderboard players={filteredPlayers} />
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+              <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+            </div>
+            <p className="mt-4 text-gray-400">Loading leaderboard data...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <div className="bg-red-900/20 border border-red-600/30 rounded-lg p-6 text-red-400 max-w-md mx-auto">
+              <p>{error}</p>
+              <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-red-700/30 hover:bg-red-700/50 rounded-md text-white transition">
+                Retry
+              </button>
+            </div>
+          </div>
+        ) : (
+          <Leaderboard players={filteredPlayers} />
+        )}
       </main>
       
       <Footer />

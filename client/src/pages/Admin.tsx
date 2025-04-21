@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Player, players, notifyPlayerChanges } from "@/data/players";
-import { usePlayers } from "@/hooks/usePlayers";
+import { Player, createPlayer, updatePlayer, deletePlayer, recordMatch } from "@/data/players";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 import { FaCrown, FaUserEdit, FaTrash, FaArrowLeft, FaPlus, FaSave, FaUserCog, FaMagic, FaTrophy } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -13,36 +13,36 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 
 export default function Admin() {
   const [, setLocation] = useLocation();
+  const { activePlayers, retiredPlayers, refreshPlayers } = usePlayerContext();
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [newPlayerMode, setNewPlayerMode] = useState(false);
   const [matchDialogOpen, setMatchDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<{
-    opponent: string;
-    result: "W" | "L";
+    opponentId: number;
     playerKills: number;
   }>({
-    opponent: "",
-    result: "W",
+    opponentId: 0,
     playerKills: 0
   });
 
-  // Define a more specific player type for admin use with required fields
+  // Define the form data type for admin use
   type AdminPlayerData = {
+    id?: number;
     rank: number;
     name: string;
     points: number;
     recentMatches: string;
     isRetired: boolean;
     peakPoints: number;
-    stats: {
-      wins: number;
-      losses: number;
-      winStreak: number;
-      kills: number;
-      teamChampion: number;
-      mcSatChampion: number;
-    }
+    wins: number;
+    losses: number;
+    winStreak: number;
+    kills: number;
+    teamChampion: number;
+    mcSatChampion: number;
   };
   
   // Form state for player data
@@ -53,36 +53,36 @@ export default function Admin() {
     recentMatches: "",
     isRetired: false,
     peakPoints: 0,
-    stats: {
-      wins: 0,
-      losses: 0,
-      winStreak: 0,
-      kills: 0,
-      teamChampion: 0,
-      mcSatChampion: 0
-    }
+    wins: 0,
+    losses: 0,
+    winStreak: 0,
+    kills: 0,
+    teamChampion: 0,
+    mcSatChampion: 0
   });
 
+  // All players combined for select lists
+  const allPlayers = [...activePlayers, ...retiredPlayers];
+
   const handleSelectPlayer = (playerId: number) => {
-    const player = players.find(p => p.rank === playerId);
+    const player = allPlayers.find(p => p.id === playerId);
     if (player) {
       setSelectedPlayerId(playerId);
       // Create a new object with all the player properties
       setFormData({
+        id: player.id,
         rank: player.rank,
         name: player.name,
-        points: player.points,
+        points: player.points || 0,
         recentMatches: player.recentMatches || "",
         isRetired: player.isRetired || false,
         peakPoints: player.peakPoints || 0,
-        stats: {
-          wins: player.stats?.wins || 0,
-          losses: player.stats?.losses || 0,
-          winStreak: player.stats?.winStreak || 0,
-          kills: player.stats?.kills || 0,
-          teamChampion: player.stats?.teamChampion || 0,
-          mcSatChampion: player.stats?.mcSatChampion || 0
-        }
+        wins: player.wins || 0,
+        losses: player.losses || 0,
+        winStreak: player.winStreak || 0,
+        kills: player.kills || 0,
+        teamChampion: player.teamChampion || 0,
+        mcSatChampion: player.mcSatChampion || 0
       });
       setEditMode(false);
     }
@@ -91,25 +91,11 @@ export default function Admin() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     
-    if (name.includes('.')) {
-      // Handle nested properties (stats)
-      const [parent, child] = name.split('.');
-      if (parent === 'stats') {
-        setFormData(prev => ({
-          ...prev,
-          stats: {
-            ...prev.stats,
-            [child]: type === 'number' ? Number(value) : value
-          }
-        }));
-      }
-    } else {
-      // Handle top-level properties
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'number' ? Number(value) : value
-      }));
-    }
+    // Handle all properties as top-level 
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? Number(value) : value
+    }));
   };
 
   const handleSwitchChange = (checked: boolean) => {
@@ -121,42 +107,39 @@ export default function Admin() {
 
   const handleResetForm = () => {
     if (selectedPlayerId) {
-      const player = players.find(p => p.rank === selectedPlayerId);
+      const player = allPlayers.find(p => p.id === selectedPlayerId);
       if (player) {
-        // Create a new object with all the player properties and default values
+        // Reset to current player data
         setFormData({
+          id: player.id,
           rank: player.rank,
           name: player.name,
-          points: player.points,
+          points: player.points || 0,
           recentMatches: player.recentMatches || "",
           isRetired: player.isRetired || false,
           peakPoints: player.peakPoints || 0,
-          stats: {
-            wins: player.stats?.wins || 0,
-            losses: player.stats?.losses || 0,
-            winStreak: player.stats?.winStreak || 0,
-            kills: player.stats?.kills || 0,
-            teamChampion: player.stats?.teamChampion || 0,
-            mcSatChampion: player.stats?.mcSatChampion || 0
-          }
+          wins: player.wins || 0,
+          losses: player.losses || 0,
+          winStreak: player.winStreak || 0,
+          kills: player.kills || 0,
+          teamChampion: player.teamChampion || 0,
+          mcSatChampion: player.mcSatChampion || 0
         });
       }
     } else {
       setFormData({
-        rank: players.length + 1,
+        rank: allPlayers.length + 1,
         name: "",
         points: 0,
         recentMatches: "",
         isRetired: false,
         peakPoints: 0,
-        stats: {
-          wins: 0,
-          losses: 0,
-          winStreak: 0,
-          kills: 0,
-          teamChampion: 0,
-          mcSatChampion: 0
-        }
+        wins: 0,
+        losses: 0,
+        winStreak: 0,
+        kills: 0,
+        teamChampion: 0,
+        mcSatChampion: 0
       });
     }
     setEditMode(false);
@@ -165,100 +148,112 @@ export default function Admin() {
   const handleNewPlayer = () => {
     setSelectedPlayerId(null);
     setFormData({
-      rank: players.length + 1,
+      rank: activePlayers.length + 1,
       name: "",
       points: 0,
       recentMatches: "",
       isRetired: false,
       peakPoints: 0,
-      stats: {
-        wins: 0,
-        losses: 0,
-        winStreak: 0,
-        kills: 0,
-        teamChampion: 0,
-        mcSatChampion: 0
-      }
+      wins: 0,
+      losses: 0,
+      winStreak: 0,
+      kills: 0,
+      teamChampion: 0,
+      mcSatChampion: 0
     });
     setNewPlayerMode(true);
     setEditMode(true);
   };
 
-  const handleSaveChanges = () => {
-    // For this demo, update the players array directly
-    console.log("Saving player data:", formData);
-    
-    if (newPlayerMode) {
-      // Add new player
-      players.push(formData as Player);
-    } else {
-      // Update existing player
-      const playerIndex = players.findIndex(p => p.rank === selectedPlayerId!);
-      if (playerIndex !== -1) {
-        // Create a new player object combining the existing player and form data
-        const updatedPlayer: Player = {
-          ...players[playerIndex],
+  const handleSaveChanges = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      
+      if (newPlayerMode) {
+        // Add new player
+        await createPlayer({
           rank: formData.rank,
           name: formData.name,
           points: formData.points,
           recentMatches: formData.recentMatches,
           isRetired: formData.isRetired,
           peakPoints: formData.peakPoints,
-          stats: {
-            wins: formData.stats.wins,
-            losses: formData.stats.losses,
-            winStreak: formData.stats.winStreak,
-            kills: formData.stats.kills,
-            teamChampion: formData.stats.teamChampion,
-            mcSatChampion: formData.stats.mcSatChampion
-          }
-        };
-        
-        players[playerIndex] = updatedPlayer;
+          wins: formData.wins,
+          losses: formData.losses,
+          winStreak: formData.winStreak,
+          kills: formData.kills,
+          teamChampion: formData.teamChampion,
+          mcSatChampion: formData.mcSatChampion
+        });
+      } else if (selectedPlayerId) {
+        // Update existing player
+        await updatePlayer(selectedPlayerId, {
+          rank: formData.rank,
+          name: formData.name,
+          points: formData.points,
+          recentMatches: formData.recentMatches,
+          isRetired: formData.isRetired,
+          peakPoints: formData.peakPoints,
+          wins: formData.wins,
+          losses: formData.losses,
+          winStreak: formData.winStreak,
+          kills: formData.kills,
+          teamChampion: formData.teamChampion,
+          mcSatChampion: formData.mcSatChampion
+        });
       }
+      
+      // Refresh data
+      await refreshPlayers();
+      
+      // Show feedback and reset UI state
+      alert("Player data has been updated!");
+      setEditMode(false);
+      setNewPlayerMode(false);
+    } catch (err) {
+      console.error("Error saving player:", err);
+      setError("Failed to save player data. Please try again.");
+    } finally {
+      setSaving(false);
     }
-    
-    // Notify all subscribers of the change
-    notifyPlayerChanges();
-    
-    // Show feedback and reset UI state
-    alert("Player data has been updated!");
-    setEditMode(false);
-    setNewPlayerMode(false);
   };
 
-  const handleDeletePlayer = () => {
+  const handleDeletePlayer = async () => {
     if (selectedPlayerId) {
       const confirmed = window.confirm("Are you sure you want to delete this player?");
       if (confirmed) {
-        console.log("Deleting player with rank:", selectedPlayerId);
-        
-        // Find the index of the player in the array and remove it
-        const playerIndex = players.findIndex(p => p.rank === selectedPlayerId);
-        if (playerIndex !== -1) {
-          players.splice(playerIndex, 1);
-          notifyPlayerChanges();
+        try {
+          setSaving(true);
+          setError(null);
+          
+          await deletePlayer(selectedPlayerId);
+          await refreshPlayers();
+          
           alert("Player has been deleted!");
-        }
-        
-        // Reset the form and selection
-        setSelectedPlayerId(null);
-        setFormData({
-          rank: 0,
-          name: "",
-          points: 0,
-          recentMatches: "",
-          isRetired: false,
-          peakPoints: 0,
-          stats: {
+          
+          // Reset the form and selection
+          setSelectedPlayerId(null);
+          setFormData({
+            rank: 0,
+            name: "",
+            points: 0,
+            recentMatches: "",
+            isRetired: false,
+            peakPoints: 0,
             wins: 0,
             losses: 0,
             winStreak: 0,
             kills: 0,
             teamChampion: 0,
             mcSatChampion: 0
-          }
-        });
+          });
+        } catch (err) {
+          console.error("Error deleting player:", err);
+          setError("Failed to delete player. Please try again.");
+        } finally {
+          setSaving(false);
+        }
       }
     }
   };
@@ -267,11 +262,10 @@ export default function Admin() {
   const handleMatchInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     setMatchData(prev => {
-      if (name === 'result') {
-        // Ensure result is typed correctly
+      if (name === 'opponentId') {
         return {
           ...prev,
-          result: value as 'W' | 'L'
+          opponentId: Number(value)
         };
       } else if (name === 'playerKills') {
         return {
@@ -292,8 +286,7 @@ export default function Admin() {
     if (!selectedPlayerId) return;
     
     setMatchData({
-      opponent: "",
-      result: "W",
+      opponentId: 0,
       playerKills: 0
     });
     
@@ -301,73 +294,55 @@ export default function Admin() {
   };
   
   // Handles the submission of a new match
-  const handleMatchSubmit = () => {
-    if (!selectedPlayerId) return;
-    
-    const playerIndex = players.findIndex(p => p.rank === selectedPlayerId);
-    if (playerIndex === -1) return;
-    
-    const player = players[playerIndex];
-    // Ensure recentMatches is always a string
-    const existingMatches = player.recentMatches || "";
-    const newRecentMatches = (matchData.result + existingMatches).slice(0, 10);
-    const isWin = matchData.result === "W";
-    
-    // Calculate new stats
-    const newStats = {
-      wins: player.stats?.wins || 0,
-      losses: player.stats?.losses || 0,
-      winStreak: player.stats?.winStreak || 0,
-      kills: (player.stats?.kills || 0) + matchData.playerKills,
-      teamChampion: player.stats?.teamChampion || 0,
-      mcSatChampion: player.stats?.mcSatChampion || 0
-    };
-    
-    // Update win/loss stats
-    if (isWin) {
-      newStats.wins += 1;
-      newStats.winStreak += 1;
-    } else {
-      newStats.losses += 1;
-      newStats.winStreak = 0; // Reset win streak on loss
+  const handleMatchSubmit = async () => {
+    if (!selectedPlayerId || !matchData.opponentId) {
+      alert("Please select an opponent");
+      return;
     }
     
-    // Calculate points change based on win/loss
-    const pointsChange = isWin 
-      ? 10 + Math.floor(matchData.playerKills / 2) 
-      : -5;
-    
-    // Update the player object with new stats
-    const updatedPlayer: Player = {
-      ...player,
-      points: player.points + pointsChange,
-      recentMatches: newRecentMatches,
-      stats: newStats
-    };
-    
-    // If current points exceed peak points, update peak points
-    if (updatedPlayer.points > (player.peakPoints || 0)) {
-      updatedPlayer.peakPoints = updatedPlayer.points;
-    }
-    
-    players[playerIndex] = updatedPlayer;
-    
-    // Update form data to reflect the changes
-    setFormData({
-      ...formData,
-      points: updatedPlayer.points,
-      recentMatches: updatedPlayer.recentMatches || "",
-      peakPoints: updatedPlayer.peakPoints || 0,
-      stats: {
-        ...newStats
+    try {
+      setSaving(true);
+      setError(null);
+      
+      // Record match using the API
+      await recordMatch(
+        selectedPlayerId,  // Winner ID
+        matchData.opponentId, // Loser ID
+        matchData.playerKills
+      );
+      
+      // Refresh player data
+      await refreshPlayers();
+      
+      // Reset the selected player's form data
+      const updatedPlayer = allPlayers.find(p => p.id === selectedPlayerId);
+      if (updatedPlayer) {
+        setFormData({
+          id: updatedPlayer.id,
+          rank: updatedPlayer.rank,
+          name: updatedPlayer.name,
+          points: updatedPlayer.points || 0,
+          recentMatches: updatedPlayer.recentMatches || "",
+          isRetired: updatedPlayer.isRetired || false,
+          peakPoints: updatedPlayer.peakPoints || 0,
+          wins: updatedPlayer.wins || 0,
+          losses: updatedPlayer.losses || 0,
+          winStreak: updatedPlayer.winStreak || 0,
+          kills: updatedPlayer.kills || 0, 
+          teamChampion: updatedPlayer.teamChampion || 0,
+          mcSatChampion: updatedPlayer.mcSatChampion || 0
+        });
       }
-    });
-    
-    // Notify subscribers and close dialog
-    notifyPlayerChanges();
-    setMatchDialogOpen(false);
-    
-    alert(`Match recorded successfully! ${isWin ? 'Win' : 'Loss'} - ${pointsChange > 0 ? '+' : ''}${pointsChange} points`);
+      
+      // Close dialog and show success message
+      setMatchDialogOpen(false);
+      alert("Match recorded successfully!");
+    } catch (err) {
+      console.error("Error recording match:", err);
+      setError("Failed to record match. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -400,16 +375,16 @@ export default function Admin() {
                 </Button>
               </div>
               <div className="h-[70vh] overflow-y-auto divide-y divide-gray-800/60">
-                {players.sort((a, b) => a.rank - b.rank).map(player => (
+                {activePlayers.concat(retiredPlayers).map(player => (
                   <div 
-                    key={player.rank}
+                    key={player.id}
                     className={`p-3 hover:bg-gray-800/30 cursor-pointer flex items-center justify-between ${
-                      selectedPlayerId === player.rank ? 'bg-purple-900/20 border-l-4 border-purple-500' : ''
+                      selectedPlayerId === player.id ? 'bg-purple-900/20 border-l-4 border-purple-500' : ''
                     }`}
-                    onClick={() => handleSelectPlayer(player.rank)}
+                    onClick={() => handleSelectPlayer(player.id)}
                   >
                     <div className="flex items-center">
-                      {player.rank <= 3 && (
+                      {player.rank <= 3 && player.rank > 0 && (
                         <FaCrown 
                           className="mr-2" 
                           color={player.rank === 1 ? "#FFD700" : player.rank === 2 ? "#C0C0C0" : "#CD7F32"} 
@@ -572,72 +547,72 @@ export default function Admin() {
                     <TabsContent value="stats">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="stats.wins">Wins</Label>
+                          <Label htmlFor="wins">Wins</Label>
                           <Input 
-                            id="stats.wins" 
-                            name="stats.wins" 
+                            id="wins" 
+                            name="wins" 
                             type="number" 
-                            value={formData.stats?.wins || 0} 
+                            value={formData.wins || 0} 
                             onChange={handleInputChange} 
                             disabled={!editMode}
                             className="bg-gray-800 border-gray-700"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="stats.losses">Losses</Label>
+                          <Label htmlFor="losses">Losses</Label>
                           <Input 
-                            id="stats.losses" 
-                            name="stats.losses" 
+                            id="losses" 
+                            name="losses" 
                             type="number" 
-                            value={formData.stats?.losses || 0} 
+                            value={formData.losses || 0} 
                             onChange={handleInputChange} 
                             disabled={!editMode}
                             className="bg-gray-800 border-gray-700"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="stats.winStreak">Win Streak</Label>
+                          <Label htmlFor="winStreak">Win Streak</Label>
                           <Input 
-                            id="stats.winStreak" 
-                            name="stats.winStreak" 
+                            id="winStreak" 
+                            name="winStreak" 
                             type="number" 
-                            value={formData.stats?.winStreak || 0} 
+                            value={formData.winStreak || 0} 
                             onChange={handleInputChange} 
                             disabled={!editMode}
                             className="bg-gray-800 border-gray-700"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="stats.kills">Kills</Label>
+                          <Label htmlFor="kills">Kills</Label>
                           <Input 
-                            id="stats.kills" 
-                            name="stats.kills" 
+                            id="kills" 
+                            name="kills" 
                             type="number" 
-                            value={formData.stats?.kills || 0} 
+                            value={formData.kills || 0} 
                             onChange={handleInputChange} 
                             disabled={!editMode}
                             className="bg-gray-800 border-gray-700"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="stats.teamChampion">Team Champion</Label>
+                          <Label htmlFor="teamChampion">Team Champion</Label>
                           <Input 
-                            id="stats.teamChampion" 
-                            name="stats.teamChampion" 
+                            id="teamChampion" 
+                            name="teamChampion" 
                             type="number" 
-                            value={formData.stats?.teamChampion || 0} 
+                            value={formData.teamChampion || 0} 
                             onChange={handleInputChange} 
                             disabled={!editMode}
                             className="bg-gray-800 border-gray-700"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="stats.mcSatChampion">MC SAT Champion</Label>
+                          <Label htmlFor="mcSatChampion">MC SAT Champion</Label>
                           <Input 
-                            id="stats.mcSatChampion" 
-                            name="stats.mcSatChampion" 
+                            id="mcSatChampion" 
+                            name="mcSatChampion" 
                             type="number" 
-                            value={formData.stats?.mcSatChampion || 0} 
+                            value={formData.mcSatChampion || 0} 
                             onChange={handleInputChange} 
                             disabled={!editMode}
                             className="bg-gray-800 border-gray-700"
@@ -665,38 +640,30 @@ export default function Admin() {
           <DialogHeader>
             <DialogTitle className="text-white">Record Match Result</DialogTitle>
             <DialogDescription>
-              Enter match details for {formData.name}. Stats will be automatically updated.
+              Select the opponent that {formData.name} defeated. Stats will be automatically updated.
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="opponent" className="text-right">
+              <Label htmlFor="opponentId" className="text-right">
                 Opponent
               </Label>
-              <Input
-                id="opponent"
-                name="opponent"
-                className="col-span-3 bg-gray-800 border-gray-700"
-                value={matchData.opponent}
-                onChange={handleMatchInputChange}
-                placeholder="Enter opponent name"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="result" className="text-right">
-                Result
-              </Label>
               <select
-                id="result"
-                name="result"
+                id="opponentId"
+                name="opponentId"
                 className="col-span-3 flex h-10 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={matchData.result}
+                value={matchData.opponentId}
                 onChange={handleMatchInputChange}
               >
-                <option value="W">Win</option>
-                <option value="L">Loss</option>
+                <option value={0}>Select opponent...</option>
+                {allPlayers
+                  .filter(p => p.id !== selectedPlayerId)
+                  .map(player => (
+                    <option key={player.id} value={player.id}>
+                      {player.name} (Rank: {player.rank})
+                    </option>
+                  ))}
               </select>
             </div>
             
@@ -723,8 +690,9 @@ export default function Admin() {
             <Button 
               onClick={handleMatchSubmit}
               className="bg-green-600 hover:bg-green-700"
+              disabled={saving || !matchData.opponentId}
             >
-              <FaMagic className="mr-2" /> Update Stats
+              {saving ? "Saving..." : "Record Match"}
             </Button>
           </DialogFooter>
         </DialogContent>

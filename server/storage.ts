@@ -125,11 +125,11 @@ export class DatabaseStorage implements IStorage {
     // Update winner stats
     await db.update(players)
       .set({
-        wins: winner.wins + 1,
-        winStreak: winner.winStreak + 1,
-        kills: winner.kills + winnerKills,
-        points: winner.points + pointsGained,
-        peakPoints: Math.max(winner.peakPoints, winner.points + pointsGained),
+        wins: (winner.wins ?? 0) + 1,
+        winStreak: (winner.winStreak ?? 0) + 1,
+        kills: (winner.kills ?? 0) + winnerKills,
+        points: (winner.points ?? 0) + pointsGained,
+        peakPoints: Math.max((winner.peakPoints ?? 0), (winner.points ?? 0) + pointsGained),
         recentMatches: (winner.recentMatches || '').slice(-9) + 'W',
         updatedAt: new Date()
       })
@@ -138,7 +138,7 @@ export class DatabaseStorage implements IStorage {
     // Update loser stats
     await db.update(players)
       .set({
-        losses: loser.losses + 1,
+        losses: (loser.losses ?? 0) + 1,
         winStreak: 0,
         recentMatches: (loser.recentMatches || '').slice(-9) + 'L',
         updatedAt: new Date()
