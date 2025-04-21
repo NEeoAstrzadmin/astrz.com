@@ -27,12 +27,26 @@ export default function Admin() {
     playerKills: 0
   });
 
-  // Form state for player data
-  const [formData, setFormData] = useState<Omit<Player, 'stats'> & { 
-    stats: NonNullable<Player['stats']>;
+  // Define a more specific player type for admin use with required fields
+  type AdminPlayerData = {
+    rank: number;
+    name: string;
+    points: number;
     recentMatches: string;
+    isRetired: boolean;
     peakPoints: number;
-  }>({
+    stats: {
+      wins: number;
+      losses: number;
+      winStreak: number;
+      kills: number;
+      teamChampion: number;
+      mcSatChampion: number;
+    }
+  };
+  
+  // Form state for player data
+  const [formData, setFormData] = useState<AdminPlayerData>({
     rank: 0,
     name: "",
     points: 0,
@@ -294,7 +308,9 @@ export default function Admin() {
     if (playerIndex === -1) return;
     
     const player = players[playerIndex];
-    const newRecentMatches = (matchData.result + (player.recentMatches || "")).slice(0, 10);
+    // Ensure recentMatches is always a string
+    const existingMatches = player.recentMatches || "";
+    const newRecentMatches = (matchData.result + existingMatches).slice(0, 10);
     const isWin = matchData.result === "W";
     
     // Calculate new stats
@@ -340,7 +356,7 @@ export default function Admin() {
     setFormData({
       ...formData,
       points: updatedPlayer.points,
-      recentMatches: updatedPlayer.recentMatches,
+      recentMatches: updatedPlayer.recentMatches || "",
       peakPoints: updatedPlayer.peakPoints || 0,
       stats: {
         ...newStats
