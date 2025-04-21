@@ -43,12 +43,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Initial data load only
     refreshPlayers();
     
-    // Set up an interval to refresh the data every 30 seconds
-    const intervalId = setInterval(refreshPlayers, 30000);
+    // No automatic refresh interval to reduce RAM usage
+    // Data will only refresh after explicit user actions
     
-    return () => clearInterval(intervalId);
+    return () => {}; // No cleanup needed
   }, []);
 
   const addPlayer = async (newPlayer: Omit<Player, 'id'>) => {

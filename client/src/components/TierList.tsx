@@ -77,17 +77,14 @@ export default function Leaderboard({ players }: LeaderboardProps) {
   const activePlayers = players.filter(player => !player.isRetired);
   const retiredPlayers = players.filter(player => player.isRetired);
   
-  // Sort by different criteria (excluding retired players from main leaderboards)
+  // Sort by different criteria
   const sortedByRank = [...activePlayers].sort((a, b) => a.rank - b.rank);
-  const sortedByKills = [...activePlayers].sort((a, b) => {
-    if (!a.stats?.kills) return 1;
-    if (!b.stats?.kills) return -1;
-    return b.stats.kills - a.stats.kills;
+  // Include all players (both active and retired) in the kill rankings
+  const sortedByKills = [...players].sort((a, b) => {
+    return (b.kills || 0) - (a.kills || 0);
   });
   const sortedByWinStreak = [...activePlayers].sort((a, b) => {
-    if (!a.stats?.winStreak) return 1;
-    if (!b.stats?.winStreak) return -1;
-    return b.stats.winStreak - a.stats.winStreak;
+    return (b.winStreak || 0) - (a.winStreak || 0);
   });
 
   // Staggered animation on mount
@@ -426,7 +423,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                 const crownColor = getCrownColor(index + 1);
                 const playerTier = getPlayerRankTier(player.points, player.isRetired);
                 const isVisible = visibleRows[`kills-${player.rank}`];
-                const killValue = player.stats?.kills || 0;
+                const killValue = player.kills || 0;
                 
                 return (
                   <div 
