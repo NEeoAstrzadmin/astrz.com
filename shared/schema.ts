@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -28,6 +28,20 @@ export const players = pgTable("players", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// New table to track head-to-head player matches
+export const playerMatchups = pgTable("player_matchups", {
+  playerId: integer("player_id").notNull().references(() => players.id, { onDelete: 'cascade' }),
+  opponentId: integer("opponent_id").notNull().references(() => players.id, { onDelete: 'cascade' }),
+  wins: integer("wins").default(0),
+  losses: integer("losses").default(0),
+  lastMatchDate: timestamp("last_match_date").defaultNow(),
+}, (table) => {
+  return {
+    // Composite primary key for player-opponent pair
+    pk: primaryKey({ columns: [table.playerId, table.opponentId] }),
+  };
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -39,8 +53,13 @@ export const insertPlayerSchema = createInsertSchema(players).omit({
   updatedAt: true,
 });
 
+export const insertPlayerMatchupSchema = createInsertSchema(playerMatchups);
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 export type InsertPlayer = z.infer<typeof insertPlayerSchema>;
 export type Player = typeof players.$inferSelect;
+
+export type InsertPlayerMatchup = z.infer<typeof insertPlayerMatchupSchema>;
+export type PlayerMatchup = typeof playerMatchups.$inferSelect;
