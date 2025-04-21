@@ -1,6 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Player, createPlayer, updatePlayer, deletePlayer, recordMatch } from "@/data/players";
+import { 
+  Player, 
+  createPlayer, 
+  updatePlayer, 
+  deletePlayer, 
+  recordMatch, 
+  fetchMatchupBetweenPlayers 
+} from "@/data/players";
 import { usePlayerContext } from "@/contexts/PlayerContext";
 import { FaCrown, FaUserEdit, FaTrash, FaArrowLeft, FaPlus, FaSave, FaUserCog, FaMagic, FaTrophy } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -265,6 +272,38 @@ export default function Admin() {
     }
   };
   
+  // Fetch matchup data when opponent or player changes
+  useEffect(() => {
+    const fetchMatchupData = async () => {
+      if (selectedPlayerId && matchData.opponentId > 0) {
+        try {
+          const matchup = await fetchMatchupBetweenPlayers(selectedPlayerId, matchData.opponentId);
+          if (matchup) {
+            setMatchupData({
+              wins: matchup.wins || 0,
+              losses: matchup.losses || 0,
+              lastMatchDate: matchup.lastMatchDate || null
+            });
+          } else {
+            // No matchup history yet
+            setMatchupData({
+              wins: 0,
+              losses: 0,
+              lastMatchDate: null
+            });
+          }
+        } catch (err) {
+          console.error("Error fetching matchup data:", err);
+          setMatchupData(null);
+        }
+      } else {
+        setMatchupData(null);
+      }
+    };
+    
+    fetchMatchupData();
+  }, [selectedPlayerId, matchData.opponentId]);
+
   // Handles match dialog input changes
   const handleMatchInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -674,6 +713,29 @@ export default function Admin() {
               </select>
             </div>
             
+            {matchData.opponentId > 0 && matchupData && (
+              <div className="col-span-4 my-2">
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                  <h4 className="text-sm font-medium text-gray-300 mb-2">Match History</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gradient-to-b from-green-900/20 to-green-900/10 p-2 rounded-lg border border-green-700/20">
+                      <div className="text-xs text-gray-400">Wins against this opponent</div>
+                      <div className="text-xl font-bold text-green-400">{matchupData.wins}</div>
+                    </div>
+                    <div className="bg-gradient-to-b from-red-900/20 to-red-900/10 p-2 rounded-lg border border-red-700/20">
+                      <div className="text-xs text-gray-400">Losses against this opponent</div>
+                      <div className="text-xl font-bold text-red-400">{matchupData.losses}</div>
+                    </div>
+                  </div>
+                  {matchupData.lastMatchDate && (
+                    <div className="text-xs text-gray-400 mt-2">
+                      Last match: {new Date(matchupData.lastMatchDate).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="playerKills" className="text-right">
                 Kills
@@ -688,6 +750,17 @@ export default function Admin() {
                 min="0"
               />
             </div>
+            
+            {matchData.opponentId > 0 && (
+              <div className="col-span-4 text-sm text-gray-400 mt-2 p-3 bg-purple-900/10 border border-purple-900/20 rounded">
+                <p className="mb-2">Match points will be calculated based on:</p>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li>Rank difference between players</li>
+                  <li>Win/loss record bonus (every 10 net wins = +1 point)</li>
+                  <li>Kill count (more kills = more points)</li>
+                </ul>
+              </div>
+            )}
           </div>
           
           <DialogFooter>

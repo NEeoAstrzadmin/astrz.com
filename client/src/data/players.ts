@@ -72,6 +72,15 @@ export const deletePlayer = async (id: number): Promise<void> => {
   }
 };
 
+export interface PlayerMatchup {
+  playerId: number;
+  opponentId: number;
+  wins: number;
+  losses: number;
+  lastMatchDate: string;
+  opponent?: Player; // Enhanced with player details when returned from API
+}
+
 export const recordMatch = async (winnerId: number, loserId: number, winnerKills: number = 0): Promise<void> => {
   const response = await fetch('/api/matches', {
     method: 'POST',
@@ -82,6 +91,30 @@ export const recordMatch = async (winnerId: number, loserId: number, winnerKills
   });
   if (!response.ok) {
     throw new Error('Failed to record match');
+  }
+}
+
+export const fetchPlayerMatchups = async (playerId: number): Promise<PlayerMatchup[]> => {
+  const response = await fetch(`/api/players/${playerId}/matchups`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch player matchups');
+  }
+  return await response.json();
+}
+
+export const fetchMatchupBetweenPlayers = async (playerId: number, opponentId: number): Promise<PlayerMatchup | null> => {
+  try {
+    const response = await fetch(`/api/players/${playerId}/matchups/${opponentId}`);
+    if (response.status === 404) {
+      return null; // No matchup exists yet
+    }
+    if (!response.ok) {
+      throw new Error('Failed to fetch matchup data');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching matchup:", error);
+    return null;
   }
 };
 
