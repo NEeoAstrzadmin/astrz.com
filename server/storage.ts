@@ -121,6 +121,9 @@ export class DatabaseStorage implements IStorage {
 
     // Calculate points based on rank difference
     const pointsGained = this.calculatePointsForMatch(winner.rank, loser.rank);
+    
+    // Add points to loser as well if they had a good performance
+    const loserPointsGained = winnerKills <= 2 ? 1 : 0; // Loser gets 1 point if they performed well (few kills against them)
 
     // Update winner stats
     await db.update(players)
@@ -140,6 +143,7 @@ export class DatabaseStorage implements IStorage {
       .set({
         losses: (loser.losses ?? 0) + 1,
         winStreak: 0,
+        points: (loser.points ?? 0) + loserPointsGained, // Loser can also gain points for performance
         recentMatches: (loser.recentMatches || '').slice(-9) + 'L',
         updatedAt: new Date()
       })
