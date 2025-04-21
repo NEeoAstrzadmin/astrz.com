@@ -1,4 +1,4 @@
-import { users, players, type User, type InsertUser, type Player, type InsertPlayer } from "@shared/schema";
+import { users, players, playerMatchups, type User, type InsertUser, type Player, type InsertPlayer, type PlayerMatchup } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and } from "drizzle-orm";
 
@@ -19,6 +19,10 @@ export interface IStorage {
   updateRanks(): Promise<void>;
   recordMatch(winnerId: number, loserId: number, winnerKills: number): Promise<void>;
   calculatePointsForMatch(winnerRank: number, loserRank: number): number;
+  
+  // Player matchup methods
+  getPlayerMatchups(playerId: number): Promise<PlayerMatchup[]>;
+  getMatchupBetweenPlayers(playerId: number, opponentId: number): Promise<PlayerMatchup | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -125,14 +129,21 @@ export class DatabaseStorage implements IStorage {
     // Add points to loser as well if they had a good performance
     const loserPointsGained = winnerKills <= 2 ? 1 : 0; // Loser gets 1 point if they performed well (few kills against them)
 
+    // Calculate points based on win/loss ratio
+    // If a player has more wins than losses, they get extra points
+    const winLossDifference = (winner.wins ?? 0) - (winner.losses ?? 0);
+    const bonusPoints = winLossDifference > 0 ? Math.min(3, Math.floor(winLossDifference / 10)) : 0;
+    
+    const totalPointsGained = pointsGained + bonusPoints;
+
     // Update winner stats
     await db.update(players)
       .set({
         wins: (winner.wins ?? 0) + 1,
         winStreak: (winner.winStreak ?? 0) + 1,
         kills: (winner.kills ?? 0) + winnerKills,
-        points: (winner.points ?? 0) + pointsGained,
-        peakPoints: Math.max((winner.peakPoints ?? 0), (winner.points ?? 0) + pointsGained),
+        points: (winner.points ?? 0) + totalPointsGained,
+        peakPoints: Math.max((winner.peakPoints ?? 0), (winner.points ?? 0) + totalPointsGained),
         recentMatches: (winner.recentMatches || '').slice(-9) + 'W',
         updatedAt: new Date()
       })
@@ -149,8 +160,90 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(players.id, loserId));
 
+    // Update head-to-head matchup stats for both players
+    
+    // For winner against loser
+    const [existingWinnerMatchup] = await db
+      .select()
+      .from(playerMatchups)
+      .where(and(
+        eq(playerMatchups.playerId, winnerId),
+        eq(playerMatchups.opponentId, loserId)
+      ));
+    
+    if (existingWinnerMatchup) {
+      await db.update(playerMatchups)
+        .set({
+          wins: (existingWinnerMatchup.wins ?? 0) + 1,
+          lastMatchDate: new Date()
+        })
+        .where(and(
+          eq(playerMatchups.playerId, winnerId),
+          eq(playerMatchups.opponentId, loserId)
+        ));
+    } else {
+      await db.insert(playerMatchups)
+        .values({
+          playerId: winnerId,
+          opponentId: loserId,
+          wins: 1,
+          losses: 0
+        });
+    }
+    
+    // For loser against winner
+    const [existingLoserMatchup] = await db
+      .select()
+      .from(playerMatchups)
+      .where(and(
+        eq(playerMatchups.playerId, loserId),
+        eq(playerMatchups.opponentId, winnerId)
+      ));
+    
+    if (existingLoserMatchup) {
+      await db.update(playerMatchups)
+        .set({
+          losses: (existingLoserMatchup.losses ?? 0) + 1,
+          lastMatchDate: new Date()
+        })
+        .where(and(
+          eq(playerMatchups.playerId, loserId),
+          eq(playerMatchups.opponentId, winnerId)
+        ));
+    } else {
+      await db.insert(playerMatchups)
+        .values({
+          playerId: loserId,
+          opponentId: winnerId,
+          wins: 0,
+          losses: 1
+        });
+    }
+
     // Update ranks after the match
     await this.updateRanks();
+  }
+  
+  // Get all matchups for a player
+  async getPlayerMatchups(playerId: number): Promise<PlayerMatchup[]> {
+    return await db
+      .select()
+      .from(playerMatchups)
+      .where(eq(playerMatchups.playerId, playerId))
+      .orderBy(desc(playerMatchups.lastMatchDate));
+  }
+  
+  // Get specific matchup between two players
+  async getMatchupBetweenPlayers(playerId: number, opponentId: number): Promise<PlayerMatchup | undefined> {
+    const [matchup] = await db
+      .select()
+      .from(playerMatchups)
+      .where(and(
+        eq(playerMatchups.playerId, playerId),
+        eq(playerMatchups.opponentId, opponentId)
+      ));
+    
+    return matchup;
   }
 
   calculatePointsForMatch(winnerRank: number, loserRank: number): number {

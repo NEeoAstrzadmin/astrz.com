@@ -124,6 +124,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to record match" });
     }
   });
+  
+  // Get all matchups for a player
+  app.get("/api/players/:id/matchups", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const matchups = await storage.getPlayerMatchups(id);
+      
+      // Get player data for each opponent to include names
+      const playerMap = new Map();
+      const allPlayers = await storage.getAllPlayers();
+      allPlayers.forEach(player => {
+        playerMap.set(player.id, player);
+      });
+      
+      // Enhance matchup data with opponent details
+      const enhancedMatchups = matchups.map(matchup => ({
+        ...matchup,
+        opponent: playerMap.get(matchup.opponentId)
+      }));
+      
+      res.json(enhancedMatchups);
+    } catch (error) {
+      console.error("Error fetching player matchups:", error);
+      res.status(500).json({ error: "Failed to fetch player matchups" });
+    }
+  });
+  
+  // Get specific matchup between two players
+  app.get("/api/players/:playerId/matchups/:opponentId", async (req: Request, res: Response) => {
+    try {
+      const playerId = parseInt(req.params.playerId);
+      const opponentId = parseInt(req.params.opponentId);
+      
+      const matchup = await storage.getMatchupBetweenPlayers(playerId, opponentId);
+      
+      if (!matchup) {
+        return res.status(404).json({ error: "Matchup not found" });
+      }
+      
+      res.json(matchup);
+    } catch (error) {
+      console.error("Error fetching matchup:", error);
+      res.status(500).json({ error: "Failed to fetch matchup" });
+    }
+  });
 
   // Update all player ranks based on points
   app.post("/api/players/update-ranks", async (_req: Request, res: Response) => {

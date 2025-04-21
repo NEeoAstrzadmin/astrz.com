@@ -27,6 +27,13 @@ export default function Admin() {
     opponentId: 0,
     playerKills: 0
   });
+  
+  // State to store opponent matchup data
+  const [matchupData, setMatchupData] = useState<{
+    wins: number;
+    losses: number;
+    lastMatchDate: string | null;
+  } | null>(null);
 
   // Define the form data type for admin use
   type AdminPlayerData = {
