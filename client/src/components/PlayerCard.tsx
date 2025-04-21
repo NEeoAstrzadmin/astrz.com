@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Player } from "@/data/players";
 import { 
@@ -20,8 +19,8 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
   const [statAnimate, setStatAnimate] = useState(false);
   
   // Calculate win rate
-  const winRate = player.stats 
-    ? Math.round((player.stats.wins / (player.stats.wins + player.stats.losses || 1)) * 100) 
+  const winRate = player.wins !== undefined && (player.wins + (player.losses || 0) > 0)
+    ? Math.round((player.wins / (player.wins + (player.losses || 0))) * 100) 
     : 0;
 
   // Format large numbers with commas
@@ -157,7 +156,7 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
         {/* Stats area with scrollable content */}
         <div className="p-5 space-y-5 overflow-y-auto max-h-[50vh] styled-scrollbar">
           {/* Match record */}
-          {player.stats && (
+          {player.wins !== undefined && (
             <div className={`transition-all duration-500 ${statAnimate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <h4 className="text-sm text-gray-400 mb-3 flex items-center">
                 <FaChartBar className="mr-2 text-purple-400" />
@@ -165,22 +164,22 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
               </h4>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="bg-gradient-to-b from-green-900/20 to-green-900/10 p-4 rounded-lg border border-green-700/20 hover:border-green-500/50 transition-all float-on-hover">
-                  <div className="text-green-400 font-bold text-2xl">{player.stats.wins}</div>
+                  <div className="text-green-400 font-bold text-2xl">{player.wins || 0}</div>
                   <div className="text-xs text-gray-400 mt-1">Wins</div>
                   <div className="h-1 mt-2 bg-gray-800 rounded-full overflow-hidden w-full">
                     <div 
                       className="h-full bg-gradient-to-r from-green-500 to-green-400 animate-shimmer"
-                      style={{ width: `${Math.min(100, (player.stats.wins / (player.stats.wins + player.stats.losses)) * 100)}%` }}
+                      style={{ width: `${Math.min(100, ((player.wins || 0) / ((player.wins || 0) + (player.losses || 0) || 1)) * 100)}%` }}
                     ></div>
                   </div>
                 </div>
                 <div className="bg-gradient-to-b from-red-900/20 to-red-900/10 p-4 rounded-lg border border-red-700/20 hover:border-red-500/50 transition-all float-on-hover">
-                  <div className="text-red-400 font-bold text-2xl">{player.stats.losses}</div>
+                  <div className="text-red-400 font-bold text-2xl">{player.losses || 0}</div>
                   <div className="text-xs text-gray-400 mt-1">Losses</div>
                   <div className="h-1 mt-2 bg-gray-800 rounded-full overflow-hidden w-full">
                     <div 
                       className="h-full bg-gradient-to-r from-red-500 to-red-400 animate-shimmer"
-                      style={{ width: `${Math.min(100, (player.stats.losses / (player.stats.wins + player.stats.losses)) * 100)}%` }}
+                      style={{ width: `${Math.min(100, ((player.losses || 0) / ((player.wins || 0) + (player.losses || 0) || 1)) * 100)}%` }}
                     ></div>
                   </div>
                 </div>
@@ -200,10 +199,8 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
             </div>
           )}
           
-          {/* Removed recent match history as requested */}
-          
-          {/* Achievements */}
-          {player.stats && (
+          {/* Combat Statistics */}
+          {player.kills !== undefined && (
             <div className={`transition-all duration-500 delay-200 ${statAnimate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <h4 className="text-sm text-gray-400 mb-3 flex items-center">
                 <FaRegListAlt className="mr-2 text-purple-400" />
@@ -217,9 +214,9 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                   <div className="w-full">
                     <div className="text-xs text-gray-400">Total Kills</div>
                     <div className="font-bold text-white text-lg flex items-center">
-                      {formatNumber(player.stats.kills || 0)}
+                      {formatNumber(player.kills || 0)}
                       <div className="ml-2 flex items-end">
-                        {Array.from({ length: Math.min(5, Math.ceil((player.stats.kills || 0) / 80)) }).map((_, i) => (
+                        {Array.from({ length: Math.min(5, Math.ceil((player.kills || 0) / 80)) }).map((_, i) => (
                           <div 
                             key={i} 
                             className="w-1 mx-0.5 bg-red-500 rounded-t-sm"
@@ -240,9 +237,9 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                   <div className="w-full">
                     <div className="text-xs text-gray-400">Win Streak</div>
                     <div className="font-bold text-white text-lg flex items-center">
-                      {player.stats.winStreak}
+                      {player.winStreak || 0}
                       <div className="ml-2 flex">
-                        {Array.from({ length: Math.min(5, player.stats.winStreak) }).map((_, i) => (
+                        {Array.from({ length: Math.min(5, player.winStreak || 0) }).map((_, i) => (
                           <div 
                             key={i} 
                             style={{ 
@@ -263,7 +260,7 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
           )}
           
           {/* Achievements */}
-          {player.stats && (
+          {(player.teamChampion !== undefined || player.mcSatChampion !== undefined) && (
             <div className={`transition-all duration-500 delay-300 ${statAnimate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <h4 className="text-sm text-gray-400 mb-3 flex items-center">
                 <FaMedal className="mr-2 text-purple-400" />
@@ -277,12 +274,16 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                   <div>
                     <div className="text-xs text-gray-400">Team Champion</div>
                     <div className="font-bold text-white text-lg">
-                      {player.stats.teamChampion}
-                      {player.stats.teamChampion > 0 && <span className="text-xs text-gray-500 ml-1">time{player.stats.teamChampion > 1 ? 's' : ''}</span>}
+                      {player.teamChampion || 0}
+                      {(player.teamChampion || 0) > 0 && (
+                        <span className="text-xs text-gray-500 ml-1">
+                          time{(player.teamChampion || 0) > 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
-                    {player.stats.teamChampion > 0 && (
+                    {(player.teamChampion || 0) > 0 && (
                       <div className="flex mt-1">
-                        {Array.from({ length: Math.min(3, player.stats.teamChampion) }).map((_, i) => (
+                        {Array.from({ length: Math.min(3, player.teamChampion || 0) }).map((_, i) => (
                           <div key={i} className="mr-1">
                             <FaMedal 
                               size={10} 
@@ -307,12 +308,16 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
                   <div>
                     <div className="text-xs text-gray-400">MC SAT Champion</div>
                     <div className="font-bold text-white text-lg">
-                      {player.stats.mcSatChampion}
-                      {player.stats.mcSatChampion > 0 && <span className="text-xs text-gray-500 ml-1">time{player.stats.mcSatChampion > 1 ? 's' : ''}</span>}
+                      {player.mcSatChampion || 0}
+                      {(player.mcSatChampion || 0) > 0 && (
+                        <span className="text-xs text-gray-500 ml-1">
+                          time{(player.mcSatChampion || 0) > 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
-                    {player.stats.mcSatChampion > 0 && (
+                    {(player.mcSatChampion || 0) > 0 && (
                       <div className="flex mt-1">
-                        {Array.from({ length: Math.min(3, player.stats.mcSatChampion) }).map((_, i) => (
+                        {Array.from({ length: Math.min(3, player.mcSatChampion || 0) }).map((_, i) => (
                           <div key={i} className="mr-1">
                             <FaTrophy 
                               size={9} 
@@ -332,16 +337,35 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
               </div>
             </div>
           )}
+          
+          {/* Recent matches section removed as requested */}
         </div>
         
         {/* Footer */}
-        <div className="p-4 border-t border-gray-800/50 text-center bg-gray-900/80">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-md transition-all transform hover:scale-105 font-medium shadow-lg"
-          >
-            Close
-          </button>
+        <div className="p-4 border-t border-gray-800 text-center bg-gray-900/60">
+          <div className="text-xs text-gray-500">
+            {player.isRetired 
+              ? "Retired from active competition" 
+              : (
+                <div className="flex items-center justify-center">
+                  <FaRegCalendarAlt className="mr-1.5" size={10} />
+                  <span>Recent matches: </span>
+                  <div className="ml-1.5 flex space-x-1">
+                    {player.recentMatches?.split('').map((result, i) => (
+                      <div 
+                        key={i}
+                        className={`w-3 h-3 text-xs flex items-center justify-center rounded-full ${
+                          result === 'W' ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'
+                        }`}
+                      >
+                        {result}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+          </div>
         </div>
       </div>
     </div>
