@@ -2,18 +2,30 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Player, players, notifyPlayerChanges } from "@/data/players";
 import { usePlayers } from "@/hooks/usePlayers";
-import { FaCrown, FaUserEdit, FaTrash, FaArrowLeft, FaPlus, FaSave, FaUserCog } from "react-icons/fa";
+import { FaCrown, FaUserEdit, FaTrash, FaArrowLeft, FaPlus, FaSave, FaUserCog, FaMagic, FaTrophy } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 export default function Admin() {
   const [, setLocation] = useLocation();
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [newPlayerMode, setNewPlayerMode] = useState(false);
+  const [matchDialogOpen, setMatchDialogOpen] = useState(false);
+  const [matchData, setMatchData] = useState<{
+    opponent: string;
+    result: "W" | "L";
+    playerKills: number;
+  }>({
+    opponent: "",
+    result: "W",
+    playerKills: 0
+  });
 
   // Form state for player data
   const [formData, setFormData] = useState<Omit<Player, 'stats'> & { 
@@ -167,9 +179,28 @@ export default function Admin() {
       players.push(formData as Player);
     } else {
       // Update existing player
-      const playerIndex = players.findIndex(p => p.rank === formData.rank);
+      const playerIndex = players.findIndex(p => p.rank === selectedPlayerId!);
       if (playerIndex !== -1) {
-        players[playerIndex] = formData as Player;
+        // Create a new player object combining the existing player and form data
+        const updatedPlayer: Player = {
+          ...players[playerIndex],
+          rank: formData.rank,
+          name: formData.name,
+          points: formData.points,
+          recentMatches: formData.recentMatches,
+          isRetired: formData.isRetired,
+          peakPoints: formData.peakPoints,
+          stats: {
+            wins: formData.stats.wins,
+            losses: formData.stats.losses,
+            winStreak: formData.stats.winStreak,
+            kills: formData.stats.kills,
+            teamChampion: formData.stats.teamChampion,
+            mcSatChampion: formData.stats.mcSatChampion
+          }
+        };
+        
+        players[playerIndex] = updatedPlayer;
       }
     }
     
@@ -216,6 +247,111 @@ export default function Admin() {
         });
       }
     }
+  };
+  
+  // Handles match dialog input changes
+  const handleMatchInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement;
+    setMatchData(prev => {
+      if (name === 'result') {
+        // Ensure result is typed correctly
+        return {
+          ...prev,
+          result: value as 'W' | 'L'
+        };
+      } else if (name === 'playerKills') {
+        return {
+          ...prev,
+          playerKills: Number(value)
+        };
+      } else {
+        return {
+          ...prev,
+          [name]: value
+        };
+      }
+    });
+  };
+  
+  // Opens the match dialog
+  const handleAddMatch = () => {
+    if (!selectedPlayerId) return;
+    
+    setMatchData({
+      opponent: "",
+      result: "W",
+      playerKills: 0
+    });
+    
+    setMatchDialogOpen(true);
+  };
+  
+  // Handles the submission of a new match
+  const handleMatchSubmit = () => {
+    if (!selectedPlayerId) return;
+    
+    const playerIndex = players.findIndex(p => p.rank === selectedPlayerId);
+    if (playerIndex === -1) return;
+    
+    const player = players[playerIndex];
+    const newRecentMatches = (matchData.result + (player.recentMatches || "")).slice(0, 10);
+    const isWin = matchData.result === "W";
+    
+    // Calculate new stats
+    const newStats = {
+      wins: player.stats?.wins || 0,
+      losses: player.stats?.losses || 0,
+      winStreak: player.stats?.winStreak || 0,
+      kills: (player.stats?.kills || 0) + matchData.playerKills,
+      teamChampion: player.stats?.teamChampion || 0,
+      mcSatChampion: player.stats?.mcSatChampion || 0
+    };
+    
+    // Update win/loss stats
+    if (isWin) {
+      newStats.wins += 1;
+      newStats.winStreak += 1;
+    } else {
+      newStats.losses += 1;
+      newStats.winStreak = 0; // Reset win streak on loss
+    }
+    
+    // Calculate points change based on win/loss
+    const pointsChange = isWin 
+      ? 10 + Math.floor(matchData.playerKills / 2) 
+      : -5;
+    
+    // Update the player object with new stats
+    const updatedPlayer: Player = {
+      ...player,
+      points: player.points + pointsChange,
+      recentMatches: newRecentMatches,
+      stats: newStats
+    };
+    
+    // If current points exceed peak points, update peak points
+    if (updatedPlayer.points > (player.peakPoints || 0)) {
+      updatedPlayer.peakPoints = updatedPlayer.points;
+    }
+    
+    players[playerIndex] = updatedPlayer;
+    
+    // Update form data to reflect the changes
+    setFormData({
+      ...formData,
+      points: updatedPlayer.points,
+      recentMatches: updatedPlayer.recentMatches,
+      peakPoints: updatedPlayer.peakPoints || 0,
+      stats: {
+        ...newStats
+      }
+    });
+    
+    // Notify subscribers and close dialog
+    notifyPlayerChanges();
+    setMatchDialogOpen(false);
+    
+    alert(`Match recorded successfully! ${isWin ? 'Win' : 'Loss'} - ${pointsChange > 0 ? '+' : ''}${pointsChange} points`);
   };
 
   return (
@@ -300,12 +436,21 @@ export default function Admin() {
                             <FaUserEdit className="mr-1" /> Edit
                           </Button>
                           {!newPlayerMode && (
-                            <Button 
-                              variant="destructive" 
-                              onClick={handleDeletePlayer}
-                            >
-                              <FaTrash className="mr-1" /> Delete
-                            </Button>
+                            <>
+                              <Button 
+                                variant="outline"
+                                onClick={handleAddMatch}
+                                className="border-green-600 text-green-400 hover:bg-green-900/20"
+                              >
+                                <FaTrophy className="mr-1" /> Add Match
+                              </Button>
+                              <Button 
+                                variant="destructive" 
+                                onClick={handleDeletePlayer}
+                              >
+                                <FaTrash className="mr-1" /> Delete
+                              </Button>
+                            </>
                           )}
                         </>
                       ) : (
@@ -497,6 +642,77 @@ export default function Admin() {
           </div>
         </div>
       </main>
+
+      {/* Match Recording Dialog */}
+      <Dialog open={matchDialogOpen} onOpenChange={setMatchDialogOpen}>
+        <DialogContent className="bg-gray-900 border border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-white">Record Match Result</DialogTitle>
+            <DialogDescription>
+              Enter match details for {formData.name}. Stats will be automatically updated.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="opponent" className="text-right">
+                Opponent
+              </Label>
+              <Input
+                id="opponent"
+                name="opponent"
+                className="col-span-3 bg-gray-800 border-gray-700"
+                value={matchData.opponent}
+                onChange={handleMatchInputChange}
+                placeholder="Enter opponent name"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="result" className="text-right">
+                Result
+              </Label>
+              <select
+                id="result"
+                name="result"
+                className="col-span-3 flex h-10 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={matchData.result}
+                onChange={handleMatchInputChange}
+              >
+                <option value="W">Win</option>
+                <option value="L">Loss</option>
+              </select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="playerKills" className="text-right">
+                Kills
+              </Label>
+              <Input
+                id="playerKills"
+                name="playerKills"
+                type="number"
+                className="col-span-3 bg-gray-800 border-gray-700"
+                value={matchData.playerKills}
+                onChange={handleMatchInputChange}
+                min="0"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMatchDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleMatchSubmit}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <FaMagic className="mr-2" /> Update Stats
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
