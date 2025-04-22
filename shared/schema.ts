@@ -35,6 +35,8 @@ export const playerMatchups = pgTable("player_matchups", {
   wins: integer("wins").default(0),
   losses: integer("losses").default(0),
   lastMatchDate: timestamp("last_match_date").defaultNow(),
+  lastMatchLocation: text("last_match_location"),
+  lastMatchScore: text("last_match_score"),
 }, (table) => {
   return {
     // Composite primary key for player-opponent pair
