@@ -114,7 +114,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async recordMatch(winnerId: number, loserId: number, winnerKills: number): Promise<void> {
+  async recordMatch(winnerId: number, loserId: number, winnerKills: number = 0): Promise<void> {
     // Get winner and loser
     const [winner] = await db.select().from(players).where(eq(players.id, winnerId));
     const [loser] = await db.select().from(players).where(eq(players.id, loserId));
@@ -126,9 +126,6 @@ export class DatabaseStorage implements IStorage {
     // Calculate points based on rank difference
     const pointsGained = this.calculatePointsForMatch(winner.rank, loser.rank);
     
-    // Add points to loser as well if they had a good performance
-    const loserPointsGained = winnerKills <= 2 ? 1 : 0; // Loser gets 1 point if they performed well (few kills against them)
-
     // Calculate points based on win/loss ratio
     // If a player has more wins than losses, they get extra points
     const winLossDifference = (winner.wins ?? 0) - (winner.losses ?? 0);
@@ -141,10 +138,8 @@ export class DatabaseStorage implements IStorage {
       .set({
         wins: (winner.wins ?? 0) + 1,
         winStreak: (winner.winStreak ?? 0) + 1,
-        kills: (winner.kills ?? 0) + winnerKills,
         points: (winner.points ?? 0) + totalPointsGained,
         peakPoints: Math.max((winner.peakPoints ?? 0), (winner.points ?? 0) + totalPointsGained),
-        recentMatches: (winner.recentMatches || '').slice(-9) + 'W',
         updatedAt: new Date()
       })
       .where(eq(players.id, winnerId));
@@ -154,8 +149,6 @@ export class DatabaseStorage implements IStorage {
       .set({
         losses: (loser.losses ?? 0) + 1,
         winStreak: 0,
-        points: (loser.points ?? 0) + loserPointsGained, // Loser can also gain points for performance
-        recentMatches: (loser.recentMatches || '').slice(-9) + 'L',
         updatedAt: new Date()
       })
       .where(eq(players.id, loserId));

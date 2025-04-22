@@ -102,8 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const matchSchema = z.object({
         winnerId: z.number(),
-        loserId: z.number(),
-        winnerKills: z.number().default(0)
+        loserId: z.number()
       });
       
       const validatedData = matchSchema.safeParse(req.body);
@@ -114,8 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await storage.recordMatch(
         validatedData.data.winnerId,
-        validatedData.data.loserId,
-        validatedData.data.winnerKills
+        validatedData.data.loserId
       );
       
       res.json({ message: "Match recorded successfully" });

@@ -29,10 +29,8 @@ export default function Admin() {
   const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<{
     opponentId: number;
-    playerKills: number;
   }>({
-    opponentId: 0,
-    playerKills: 0
+    opponentId: 0
   });
   
   // State to store opponent matchup data
