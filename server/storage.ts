@@ -2,6 +2,15 @@ import { users, players, playerMatchups, type User, type InsertUser, type Player
 import { db } from "./db";
 import { eq, desc, sql, and } from "drizzle-orm";
 
+// Helper function to reverse a match score (e.g. "3-2" becomes "2-3")
+function reverseScore(score: string): string {
+  const parts = score.split('-');
+  if (parts.length === 2) {
+    return `${parts[1]}-${parts[0]}`;
+  }
+  return score;
+}
+
 export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;

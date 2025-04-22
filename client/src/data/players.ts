@@ -87,6 +87,11 @@ export const recordMatch = async (
   winnerData?: {
     kills?: number,
     winStreak?: number
+  },
+  matchData?: {
+    location?: string,
+    score?: string,
+    matchDate?: string
   }
 ): Promise<void> => {
   const response = await fetch('/api/matches', {
@@ -97,7 +102,8 @@ export const recordMatch = async (
     body: JSON.stringify({ 
       winnerId, 
       loserId,
-      winnerData
+      winnerData,
+      matchData
     }),
   });
   if (!response.ok) {

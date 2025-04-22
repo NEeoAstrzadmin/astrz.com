@@ -32,11 +32,17 @@ export default function Admin() {
     winnerKills: number;
     winStreakUpdate: number;
     matchNotes: string;
+    matchLocation: string;
+    matchScore: string;
+    matchDate: string;
   }>({
     opponentId: 0,
     winnerKills: 0,
     winStreakUpdate: 1,
-    matchNotes: ""
+    matchNotes: "",
+    matchLocation: "",
+    matchScore: "",
+    matchDate: new Date().toISOString().split('T')[0] // Default to today's date
   });
   
   // State to store opponent matchup data
@@ -336,7 +342,10 @@ export default function Admin() {
       opponentId: 0,
       winnerKills: 0,
       winStreakUpdate: 1,
-      matchNotes: ""
+      matchNotes: "",
+      matchLocation: "",
+      matchScore: "",
+      matchDate: new Date().toISOString().split('T')[0]
     });
     
     setMatchDialogOpen(true);
@@ -359,11 +368,19 @@ export default function Admin() {
         winStreak: Number(matchData.winStreakUpdate)
       };
       
-      // Record match using the API with custom stats
+      // Prepare match metadata
+      const matchMetadata = {
+        location: matchData.matchLocation,
+        score: matchData.matchScore,
+        matchDate: matchData.matchDate
+      };
+      
+      // Record match using the API with custom stats and match data
       await recordMatch(
         selectedPlayerId,  // Winner ID
         matchData.opponentId, // Loser ID
-        winnerData // Custom stats
+        winnerData, // Custom stats
+        matchMetadata // Match metadata
       );
       
       // Refresh player data
