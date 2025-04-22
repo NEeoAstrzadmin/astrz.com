@@ -655,9 +655,9 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                               </TooltipTrigger>
                               <TooltipContent side="right" className="w-60">
                                 <div className="space-y-1 p-1">
-                                  <p className="text-xs"><span className="text-green-400">Wins:</span> {player.stats?.wins || 0}</p>
-                                  <p className="text-xs"><span className="text-red-400">Losses:</span> {player.stats?.losses || 0}</p>
-                                  <p className="text-xs"><span className="text-purple-400">Total Kills:</span> {player.stats?.kills || 0}</p>
+                                  <p className="text-xs"><span className="text-green-400">Wins:</span> {player.wins || 0}</p>
+                                  <p className="text-xs"><span className="text-red-400">Losses:</span> {player.losses || 0}</p>
+                                  <p className="text-xs"><span className="text-purple-400">Total Kills:</span> {player.kills || 0}</p>
                                 </div>
                               </TooltipContent>
                             </Tooltip>
