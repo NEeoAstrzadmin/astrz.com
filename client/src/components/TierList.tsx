@@ -338,7 +338,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                               : 'text-gray-300'
                       }`}
                     >
-                      {player.points} 
+                      {player.points || ""} 
                       <span className="text-xs font-normal ml-1 text-gray-500">pts</span>
                       
                       {/* Show peak points for all players */}

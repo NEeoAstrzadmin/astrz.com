@@ -312,12 +312,14 @@ export default function Admin() {
   const handleMatchInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     setMatchData(prev => {
-      if (name === 'opponentId') {
+      if (name === 'opponentId' || name === 'winnerKills' || name === 'winStreakUpdate') {
+        // Convert to number for numeric fields
         return {
           ...prev,
-          opponentId: Number(value)
+          [name]: Number(value)
         };
       } else {
+        // Keep as string for text fields
         return {
           ...prev,
           [name]: value
@@ -449,7 +451,7 @@ export default function Admin() {
                         <div className="flex items-center text-xs">
                           <span className="text-gray-400">Rank: {player.rank}</span>
                           <span className="mx-1 text-gray-600">•</span>
-                          <span className="text-purple-400">{player.points} pts</span>
+                          <span className="text-purple-400">{player.points || ""} pts</span>
                         </div>
                       </div>
                     </div>
@@ -744,13 +746,62 @@ export default function Admin() {
             )}
             
             {matchData.opponentId > 0 && (
-              <div className="col-span-4 text-sm text-gray-400 mt-2 p-3 bg-purple-900/10 border border-purple-900/20 rounded">
-                <p className="mb-2">Match points will be calculated based on:</p>
-                <ul className="list-disc list-inside space-y-1 text-xs">
-                  <li>Rank difference between players</li>
-                  <li>Win/loss record bonus (every 10 net wins = +1 point)</li>
-                </ul>
-              </div>
+              <>
+                <div className="col-span-4 text-sm font-medium text-white mt-4 mb-2">
+                  Match Details
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="winnerKills" className="text-right">
+                    Kills
+                  </Label>
+                  <Input
+                    id="winnerKills"
+                    name="winnerKills"
+                    type="number"
+                    className="col-span-3 bg-gray-800 border-gray-700"
+                    value={matchData.winnerKills}
+                    onChange={handleMatchInputChange}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="winStreakUpdate" className="text-right">
+                    Win Streak
+                  </Label>
+                  <Input
+                    id="winStreakUpdate"
+                    name="winStreakUpdate"
+                    type="number"
+                    className="col-span-3 bg-gray-800 border-gray-700"
+                    value={matchData.winStreakUpdate}
+                    onChange={handleMatchInputChange}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="matchNotes" className="text-right">
+                    Match Notes
+                  </Label>
+                  <Input
+                    id="matchNotes"
+                    name="matchNotes"
+                    className="col-span-3 bg-gray-800 border-gray-700"
+                    value={matchData.matchNotes}
+                    onChange={handleMatchInputChange}
+                    placeholder="Optional notes about the match"
+                  />
+                </div>
+                
+                <div className="col-span-4 text-sm text-gray-400 mt-2 p-3 bg-purple-900/10 border border-purple-900/20 rounded">
+                  <p className="mb-2">Match points will be calculated based on:</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>Rank difference between players</li>
+                    <li>Win/loss record bonus (every 10 net wins = +1 point)</li>
+                    <li><strong>Note:</strong> Points are calculated automatically</li>
+                  </ul>
+                </div>
+              </>
             )}
           </div>
           
