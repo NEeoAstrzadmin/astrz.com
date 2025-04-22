@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import PlayerCard from "./PlayerCard";
-import AIPrediction from "./AIPrediction";
+// AI prediction component removed to optimize RAM usage
 import { Player } from "@/data/players";
 import { 
   FaCrown, FaTrophy, FaSkull, FaFireAlt, FaUserTimes, 
@@ -30,7 +30,7 @@ interface RankTier {
 export default function Leaderboard({ players }: LeaderboardProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [showPlayerCard, setShowPlayerCard] = useState(false);
-  const [showAIPrediction, setShowAIPrediction] = useState(false);
+  // AI prediction functionality removed to optimize RAM usage
   const [visibleRows, setVisibleRows] = useState<Record<string, boolean>>({});
 
   // Colors for the leaderboard
@@ -117,21 +117,8 @@ export default function Leaderboard({ players }: LeaderboardProps) {
   return (
     <section id="leaderboard" className="space-y-6 relative">
       {/* Header Controls */}
-      <div className="flex justify-between items-center mb-3">
-        {/* AI Prediction Button */}
-        <Button 
-          variant="outline" 
-          className="text-sm text-purple-300 hover:text-purple-100 flex items-center gap-1.5 bg-gray-800/70 hover:bg-purple-900/30 transition-colors border border-purple-700/50 hover:border-purple-500"
-          onClick={() => {
-            if (sortedByRank.length > 0) {
-              setSelectedPlayer(sortedByRank[0]);
-              setShowAIPrediction(true);
-            }
-          }}
-        >
-          <FaBrain className="text-purple-400" /> 
-          <span>Combat AI Analysis</span>
-        </Button>
+      <div className="flex justify-end items-center mb-3">
+        {/* AI prediction button removed to optimize RAM usage */}
         
         {/* Admin Panel Link */}
         <Link href="/admin" className="text-sm text-gray-300 hover:text-purple-400 flex items-center gap-1.5 bg-gray-800/70 px-4 py-1.5 rounded-md transition-colors hover:bg-gray-700/70 border border-gray-700/50">
@@ -294,22 +281,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                           </Badge>
                         </div>
                         
-                        {/* AI Analysis button for mobile */}
-                        <div className="mt-1 md:hidden">
-                          <Button 
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/40"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedPlayer(player);
-                              setShowAIPrediction(true);
-                            }}
-                          >
-                            <FaRobot className="text-purple-400 mr-1" size={10} />
-                            <span>AI Predict</span>
-                          </Button>
-                        </div>
+                        {/* AI Analysis button for mobile removed to optimize RAM usage */}
                       </div>
                     </div>
                     
@@ -349,30 +321,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                               </span>
                             </div>
                             
-                            {/* AI Analysis button for desktop */}
-                            <div className="hidden md:block">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button 
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-8 px-2 bg-purple-900/20 border-purple-500/30 hover:bg-purple-900/40"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedPlayer(player);
-                                        setShowAIPrediction(true);
-                                      }}
-                                    >
-                                      <FaRobot className="text-purple-400" size={12} />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top">
-                                    <p className="text-xs">AI Analysis</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </div>
+                            {/* AI Analysis button for desktop removed to optimize RAM usage */}
                           </div>
                         )}
                       </div>
@@ -593,10 +542,10 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                         <div className="flex items-center justify-center text-gray-300 bg-gray-800/50 rounded-md px-2 py-1">
                           <FaTrophy className="mr-2 text-yellow-500" size={14} />
                           <span className="text-sm font-medium">
-                            {player.stats?.teamChampion || 0} Championships
+                            {player.teamChampion || 0} Championships
                           </span>
                         </div>
-                        <span className="text-xs text-gray-500 mt-1">{player.stats?.wins || 0} Total Wins</span>
+                        <span className="text-xs text-gray-500 mt-1">{player.wins || 0} Total Wins</span>
                       </div>
                     </div>
                     
@@ -748,14 +697,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
         />
       )}
       
-      {/* AI Prediction */}
-      {showAIPrediction && selectedPlayer && (
-        <AIPrediction
-          player={selectedPlayer}
-          allPlayers={players}
-          onClose={() => setShowAIPrediction(false)}
-        />
-      )}
+      {/* AI Prediction component removed to optimize RAM usage */}
     </section>
   );
 }
