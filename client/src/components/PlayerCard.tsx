@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { Player } from "@/data/players";
 import { 
   FaTimes, FaCrown, FaUserAlt, FaTrophy, FaSkull, 
@@ -14,39 +14,42 @@ interface PlayerCardProps {
   onClose: () => void;
 }
 
-export default function PlayerCard({ player, onClose }: PlayerCardProps) {
+// Create memoized component for better performance
+const PlayerCard = memo(({ player, onClose }: PlayerCardProps) => {
   const [progress, setProgress] = useState(0);
   const [statAnimate, setStatAnimate] = useState(false);
   
-  // Calculate win rate
-  const winRate = player.wins !== undefined && (player.wins + (player.losses || 0) > 0)
-    ? Math.round((player.wins / (player.wins + (player.losses || 0))) * 100) 
-    : 0;
+  // Memoize calculated values to prevent recalculation on re-renders
+  const winRate = useMemo(() => {
+    return player.wins !== undefined && (player.wins + (player.losses || 0) > 0)
+      ? Math.round((player.wins / (player.wins + (player.losses || 0))) * 100) 
+      : 0;
+  }, [player.wins, player.losses]);
 
-  // Format large numbers with commas
-  const formatNumber = (num: number): string => {
+  // Memoized format function to prevent re-creation on re-renders
+  const formatNumber = useCallback((num: number): string => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
+  }, []);
   
-  // Get color for rank tier
-  const getRankTierColor = () => {
+  // Memoized function to get color for rank tier
+  const getRankTierColor = useCallback(() => {
     if (player.isRetired) return { color: "#C0C0C0", bg: "rgba(192, 192, 192, 0.15)" };
     
     if (player.points >= 250) return { color: "#FF6B6B", bg: "rgba(255, 107, 107, 0.15)" };
     if (player.points >= 180) return { color: "#4D96FF", bg: "rgba(77, 150, 255, 0.15)" };
     if (player.points >= 100) return { color: "#9FE6A0", bg: "rgba(159, 230, 160, 0.15)" };
     return { color: "#FFBD35", bg: "rgba(255, 189, 53, 0.15)" };
-  };
+  }, [player.isRetired, player.points]);
   
-  // Get rank tier name
-  const getRankTierName = () => {
+  // Memoized function to get rank tier name
+  const getRankTierName = useCallback(() => {
     if (player.isRetired) return "Retired Legend";
     
     if (player.points >= 250) return "Astrz Prime";
     if (player.points >= 180) return "Astrz Vanguard";
     if (player.points >= 100) return "Astrz Challenger";
     return "Astrz Edge";
-  };
+  }, [player.isRetired, player.points]);
   
   // Animation effects
   useEffect(() => {
@@ -353,4 +356,6 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
       </div>
     </div>
   );
-}
+});
+
+export default PlayerCard;
