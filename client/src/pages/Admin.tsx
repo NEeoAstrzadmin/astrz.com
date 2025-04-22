@@ -764,39 +764,90 @@ export default function Admin() {
             
             {matchData.opponentId > 0 && (
               <>
-                <div className="col-span-4 text-sm font-medium text-white mt-4 mb-2">
-                  Match Details
+                <div className="col-span-4 mt-4 mb-2">
+                  <Tabs defaultValue="player-stats" className="w-full">
+                    <TabsList className="w-full bg-gray-800 border-gray-700">
+                      <TabsTrigger value="player-stats" className="w-1/2">Player Stats</TabsTrigger>
+                      <TabsTrigger value="match-details" className="w-1/2">Match Details</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="player-stats" className="mt-2 space-y-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="winnerKills" className="text-right">
+                          Kills
+                        </Label>
+                        <Input
+                          id="winnerKills"
+                          name="winnerKills"
+                          type="number"
+                          className="col-span-3 bg-gray-800 border-gray-700"
+                          value={matchData.winnerKills}
+                          onChange={handleMatchInputChange}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="winStreakUpdate" className="text-right">
+                          Win Streak
+                        </Label>
+                        <Input
+                          id="winStreakUpdate"
+                          name="winStreakUpdate"
+                          type="number"
+                          className="col-span-3 bg-gray-800 border-gray-700"
+                          value={matchData.winStreakUpdate}
+                          onChange={handleMatchInputChange}
+                        />
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="match-details" className="mt-2 space-y-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="matchDate" className="text-right">
+                          Match Date
+                        </Label>
+                        <Input
+                          id="matchDate"
+                          name="matchDate"
+                          type="date"
+                          className="col-span-3 bg-gray-800 border-gray-700"
+                          value={matchData.matchDate}
+                          onChange={handleMatchInputChange}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="matchLocation" className="text-right">
+                          Location
+                        </Label>
+                        <Input
+                          id="matchLocation"
+                          name="matchLocation"
+                          className="col-span-3 bg-gray-800 border-gray-700"
+                          value={matchData.matchLocation}
+                          onChange={handleMatchInputChange}
+                          placeholder="e.g., Arena 1, Desert Map"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="matchScore" className="text-right">
+                          Score
+                        </Label>
+                        <Input
+                          id="matchScore"
+                          name="matchScore"
+                          className="col-span-3 bg-gray-800 border-gray-700"
+                          value={matchData.matchScore}
+                          onChange={handleMatchInputChange}
+                          placeholder="e.g., 3-1, 2-0"
+                        />
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
                 
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="winnerKills" className="text-right">
-                    Kills
-                  </Label>
-                  <Input
-                    id="winnerKills"
-                    name="winnerKills"
-                    type="number"
-                    className="col-span-3 bg-gray-800 border-gray-700"
-                    value={matchData.winnerKills}
-                    onChange={handleMatchInputChange}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="winStreakUpdate" className="text-right">
-                    Win Streak
-                  </Label>
-                  <Input
-                    id="winStreakUpdate"
-                    name="winStreakUpdate"
-                    type="number"
-                    className="col-span-3 bg-gray-800 border-gray-700"
-                    value={matchData.winStreakUpdate}
-                    onChange={handleMatchInputChange}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-4 items-center gap-4">
+                <div className="grid grid-cols-4 items-center gap-4 mt-4">
                   <Label htmlFor="matchNotes" className="text-right">
                     Match Notes
                   </Label>
@@ -822,17 +873,46 @@ export default function Admin() {
             )}
           </div>
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMatchDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleMatchSubmit}
-              className="bg-green-600 hover:bg-green-700"
-              disabled={saving || !matchData.opponentId}
-            >
-              {saving ? "Saving..." : "Record Match"}
-            </Button>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between w-full">
+            <div className="flex gap-2 order-1 sm:order-none">
+              <Button variant="outline" onClick={() => setMatchDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleMatchSubmit}
+                className="bg-green-600 hover:bg-green-700"
+                disabled={saving || !matchData.opponentId}
+              >
+                {saving ? "Saving..." : "Record Match"}
+              </Button>
+            </div>
+            
+            {/* Rematch button - only shown when at least one match has been recorded */}
+            {matchupData && (matchupData.wins > 0 || matchupData.losses > 0) && (
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  // First submit current match
+                  handleMatchSubmit();
+                  
+                  // Then setup another match with the same opponent
+                  setTimeout(() => {
+                    if (selectedPlayerId && matchData.opponentId) {
+                      setMatchData({
+                        ...matchData,
+                        winnerKills: 0,
+                        winStreakUpdate: formData.winStreak ? formData.winStreak + 1 : 1,
+                      });
+                      setMatchDialogOpen(true);
+                    }
+                  }, 500);
+                }}
+                className="border-yellow-600 text-yellow-500 hover:bg-yellow-900/20 order-2 sm:order-none"
+                disabled={saving || !matchData.opponentId}
+              >
+                <FaTrophy className="mr-1" /> Rematch
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
