@@ -85,8 +85,7 @@ export const recordMatch = async (
   winnerId: number, 
   loserId: number, 
   winnerData?: {
-    wins?: number,
-    losses?: number,
+    kills?: number,
     winStreak?: number
   }
 ): Promise<void> => {

@@ -101,7 +101,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function usePlayerContext() {
+// Export named hook for context usage
+export const usePlayerContext = () => {
   const context = useContext(PlayerContext);
   if (context === undefined) {
     throw new Error("usePlayerContext must be used within a PlayerProvider");
