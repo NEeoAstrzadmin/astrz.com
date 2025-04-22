@@ -385,6 +385,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                 const playerTier = getPlayerRankTier(player.points, player.isRetired);
                 const isVisible = visibleRows[`kills-${player.rank}`];
                 const killValue = player.kills || 0;
+                const badge = getPlayerBadge(player);
                 
                 return (
                   <div 
@@ -395,7 +396,8 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                       isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
                     style={{ 
-                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
+                      borderLeft: isTopThree ? `4px solid ${crownColor}` : `4px solid ${badge.color}`,
+                      background: `linear-gradient(to right, ${badge.color}10, transparent)`,
                       transitionDelay: `${index * 30}ms`
                     }}
                     onClick={() => handlePlayerClick(player)}
@@ -431,8 +433,6 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                             {player.combatTitle || generateDistinctiveTitle(player)}
                           </span>
                         </div>
-                        
-
                       </div>
                     </div>
                     
@@ -520,18 +520,9 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                             </span>
                           </div>
                           
-                          {/* Retired status badge */}
+                          {/* Using PlayerBadges component instead */}
                           <div className="mt-1">
-                            <Badge 
-                              className="text-[10px] font-normal"
-                              style={{ 
-                                backgroundColor: "rgba(192, 192, 192, 0.15)",
-                                color: silverColor,
-                                borderLeft: `2px solid ${silverColor}`
-                              }}
-                            >
-                              Retired Legend
-                            </Badge>
+                            <PlayerBadges player={player} size="sm" />
                           </div>
                         </div>
                       </div>
@@ -586,6 +577,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                 const isTopThree = index < 3;
                 const crownColor = getCrownColor(index + 1);
                 const isVisible = visibleRows[`retired-${player.rank}`];
+                const badge = getPlayerBadge(player);
                 
                 return (
                   <div 
@@ -596,7 +588,8 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                       isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
                     style={{ 
-                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
+                      borderLeft: isTopThree ? `4px solid ${crownColor}` : `4px solid ${badge.color}`,
+                      background: `linear-gradient(to right, ${badge.color}10, transparent)`,
                       transitionDelay: `${index * 30}ms`
                     }}
                     onClick={() => handlePlayerClick(player)}
@@ -628,18 +621,9 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                             </span>
                           </div>
                           
-                          {/* Retired status badge */}
+                          {/* Using PlayerBadges component instead */}
                           <div className="mt-1">
-                            <Badge 
-                              className="text-[10px] font-normal"
-                              style={{ 
-                                backgroundColor: "rgba(192, 192, 192, 0.15)",
-                                color: silverColor,
-                                borderLeft: `2px solid ${silverColor}`
-                              }}
-                            >
-                              Retired Legend
-                            </Badge>
+                            <PlayerBadges player={player} size="sm" />
                           </div>
                         </div>
                         
@@ -669,14 +653,15 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                     <div className="col-span-5 md:col-span-4 text-right">
                       <div className="flex flex-col items-end">
                         <span className="font-mono text-xl font-bold text-yellow-400">
-                          {player.peakPoints}
+                          {player.peakPoints || player.points}
                         </span>
-                        <span className="text-xs text-gray-500 mt-0.5">All-Time Peak</span>
+                        <span className="text-xs text-gray-500 mt-0.5">Peak Points</span>
                       </div>
                     </div>
                   </div>
                 );
               })}
+              
               {retiredPlayers.length === 0 && (
                 <div className="p-16 text-center text-gray-400">
                   <FaUserTimes size={32} className="mx-auto mb-4 text-gray-600" />
@@ -687,17 +672,16 @@ export default function Leaderboard({ players }: LeaderboardProps) {
             </div>
           </TabsContent>
         </Tabs>
+        
       </div>
       
-      {/* Player Card */}
+      {/* Player card dialog - displayed when a player is clicked */}
       {showPlayerCard && selectedPlayer && (
         <PlayerCard
           player={selectedPlayer}
           onClose={() => setShowPlayerCard(false)}
         />
       )}
-      
-      {/* AI Prediction component removed to optimize RAM usage */}
     </section>
   );
 }
