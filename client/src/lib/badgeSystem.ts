@@ -1,5 +1,5 @@
 import { Player } from "@/data/players";
-import { FaCrown, FaTrophy, FaStar, FaFire, FaChess, FaShieldAlt, FaBolt, FaFighterJet } from "react-icons/fa";
+import { FaCrown, FaTrophy, FaStar, FaFire, FaChess, FaShieldAlt, FaBolt, FaFighterJet, FaSkull } from "react-icons/fa";
 
 /**
  * Badge definitions with point thresholds and icons
@@ -18,59 +18,43 @@ export interface Badge {
  */
 export const badges: Badge[] = [
   {
-    id: 'supreme-champion',
-    name: 'Supreme Champion',
+    id: 'astrz-prime',
+    name: 'Astrz Prime',
     description: 'Reached the pinnacle of combat excellence',
     icon: FaCrown,
-    color: '#FFD700', // Gold
+    color: '#9D4EDD', // Deep purple
     pointThreshold: 300
   },
   {
-    id: 'master-tactician',
-    name: 'Master Tactician',
-    description: 'A brilliant strategist in the arena',
-    icon: FaChess,
-    color: '#C0C0C0', // Silver
-    pointThreshold: 250
+    id: 'astrz-warbringer',
+    name: 'Astrz Warbringer',
+    description: 'A devastating force on the battlefield',
+    icon: FaSkull,
+    color: '#7B2CBF', // Rich purple
+    pointThreshold: 240
   },
   {
-    id: 'elite-warrior',
-    name: 'Elite Warrior',
-    description: 'One of the most formidable fighters',
+    id: 'astrz-vanguard',
+    name: 'Astrz Vanguard',
+    description: 'Leading the charge in combat',
     icon: FaShieldAlt,
-    color: '#4D96FF', // Blue
-    pointThreshold: 200
+    color: '#5A189A', // Royal purple
+    pointThreshold: 180
   },
   {
-    id: 'combat-veteran',
-    name: 'Combat Veteran',
-    description: 'Experienced and respected combatant',
-    icon: FaTrophy,
-    color: '#9FE6A0', // Green
-    pointThreshold: 150
+    id: 'astrz-enforcer',
+    name: 'Astrz Enforcer',
+    description: 'Imposing order through combat prowess',
+    icon: FaFire, // Using FaFire for Enforcer badge
+    color: '#3C096C', // Deep violet
+    pointThreshold: 120
   },
   {
-    id: 'rising-star',
-    name: 'Rising Star',
-    description: 'Rapidly ascending through the ranks',
+    id: 'astrz-cadet',
+    name: 'Astrz Cadet',
+    description: 'Beginning the journey to combat excellence',
     icon: FaStar,
-    color: '#FFBD35', // Orange
-    pointThreshold: 100
-  },
-  {
-    id: 'arena-initiate',
-    name: 'Arena Initiate',
-    description: 'Beginning the journey of combat mastery',
-    icon: FaFire,
-    color: '#FF6B6B', // Red
-    pointThreshold: 50
-  },
-  {
-    id: 'combat-novice',
-    name: 'Combat Novice',
-    description: 'Taking first steps in competitive combat',
-    icon: FaBolt,
-    color: '#C77DFF', // Purple
+    color: '#240046', // Dark violet
     pointThreshold: 0
   }
 ];

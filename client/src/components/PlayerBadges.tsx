@@ -48,8 +48,15 @@ export function PlayerBadges({
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge 
-                className={`${sizeClasses[size]} flex items-center gap-1.5`} 
-                style={{ backgroundColor: badge.color, color: "#111" }}
+                className={`${sizeClasses[size]} flex items-center gap-1.5 animate-shimmer`} 
+                style={{ 
+                  backgroundColor: `${badge.color}25`, // 25% opacity background
+                  color: badge.color,
+                  borderColor: `${badge.color}70`, // 70% opacity border
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  boxShadow: `0 0 8px ${badge.color}40` // Subtle glow effect
+                }}
               >
                 <badge.icon className={iconSizeClasses[size]} />
                 {badge.name}
@@ -73,13 +80,16 @@ export function PlayerBadges({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Progress 
-                  value={(player.points / nextBadge.pointThreshold) * 100} 
-                  className="h-2" 
-                  style={{ 
-                    "--progress-background": nextBadge.color 
-                  } as React.CSSProperties}
-                />
+                <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden border border-gray-700">
+                  <div 
+                    className="h-full animate-pulse" 
+                    style={{ 
+                      width: `${(player.points / nextBadge.pointThreshold) * 100}%`,
+                      backgroundColor: nextBadge.color,
+                      boxShadow: `0 0 10px ${nextBadge.color}`
+                    }}
+                  ></div>
+                </div>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Need {pointsNeeded} more points for {nextBadge.name}</p>

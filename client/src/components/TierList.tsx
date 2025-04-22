@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateCombatTitle, generateDistinctiveTitle } from "@/lib/titleGenerator";
 import { PlayerBadges } from "./PlayerBadges";
-import { getPlayerBadge } from "@/lib/badgeSystem";
+import { getPlayerBadge, badges, retiredBadge } from "@/lib/badgeSystem";
 
 interface LeaderboardProps {
   players: Player[];
@@ -49,16 +49,23 @@ const PlayerRow = memo(({
   onClick: (player: Player) => void;
   formatNumber: (num: number) => string;
 }) => {
+  // Get the player's badge for custom styling
+  const badge = getPlayerBadge(player);
+  
   return (
     <div 
       key={player.rank} 
-      className={`grid grid-cols-12 py-4 px-5 items-center hover:bg-gray-800/30 ${
-        isTopThree ? 'bg-gray-800/20' : ''
+      className={`grid grid-cols-12 py-4 px-5 items-center ${
+        isTopThree ? 'bg-gray-900/40' : 'bg-gray-900/20'
       } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{ 
-        borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
+        borderLeft: `4px solid ${isTopThree ? crownColor : badge.color}`,
+        borderTop: `1px solid ${badge.color}20`,
+        borderBottom: `1px solid ${badge.color}20`,
+        background: `linear-gradient(to right, ${badge.color}10, transparent)`,
+        boxShadow: `inset 0 0 20px ${badge.color}10`,
         transitionDelay: `${index * 30}ms`
       }}
       onClick={() => onClick(player)}
@@ -295,42 +302,46 @@ export default function Leaderboard({ players }: LeaderboardProps) {
           </div>
 
           {/* Rank Tiers Legend */}
-          <div className="flex flex-wrap justify-center p-3 border-b border-gray-800 gap-3 bg-gray-900/60">
+          <div className="flex flex-wrap justify-center p-3 border-b border-gray-800 gap-4 bg-gray-900/60">
             <TooltipProvider>
-              {rankTiers.map((tier, index) => (
-                <Tooltip key={index}>
+              {badges.map((badge) => (
+                <Tooltip key={badge.id}>
                   <TooltipTrigger asChild>
                     <div 
-                      className="flex items-center hover:scale-110 transition-transform cursor-help"
-                      style={{ color: tier.color }}
+                      className="flex items-center hover:scale-110 transition-transform cursor-help bg-gray-900 px-2 py-1 rounded-lg"
+                      style={{ 
+                        color: badge.color,
+                        borderLeft: `2px solid ${badge.color}`,
+                        boxShadow: `0 0 10px ${badge.color}30`
+                      }}
                     >
-                      <div 
-                        className="w-3 h-3 rounded-full mr-1.5 animate-pulse"
-                        style={{ backgroundColor: tier.color }}
-                      ></div>
-                      <span className="text-xs font-medium">{tier.name}</span>
+                      <badge.icon className="mr-1.5 text-xs" />
+                      <span className="text-xs font-medium">{badge.name}</span>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p className="text-xs">Min. points: {tier.minPoints}+ pts</p>
+                  <TooltipContent side="bottom" className="bg-gray-900 border border-purple-900/50">
+                    <p className="text-xs font-medium">{badge.name}</p>
+                    <p className="text-xs opacity-80">{badge.description}</p>
+                    <p className="text-xs mt-1">Min. points: {badge.pointThreshold}+</p>
                   </TooltipContent>
                 </Tooltip>
               ))}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div 
-                    className="flex items-center hover:scale-110 transition-transform cursor-help"
-                    style={{ color: silverColor }}
+                    className="flex items-center hover:scale-110 transition-transform cursor-help bg-gray-900 px-2 py-1 rounded-lg"
+                    style={{ 
+                      color: retiredBadge.color,
+                      borderLeft: `2px solid ${retiredBadge.color}`,
+                      boxShadow: `0 0 10px ${retiredBadge.color}30`
+                    }}
                   >
-                    <div 
-                      className="w-3 h-3 rounded-full mr-1.5"
-                      style={{ backgroundColor: silverColor }}
-                    ></div>
+                    <retiredBadge.icon className="mr-1.5 text-xs" />
                     <span className="text-xs font-medium">Retired Legend</span>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p className="text-xs">Former champions who've retired from active competition</p>
+                <TooltipContent side="bottom" className="bg-gray-900 border border-purple-900/50">
+                  <p className="text-xs">{retiredBadge.description}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
