@@ -172,11 +172,15 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(players.id, winnerId));
 
+    // Calculate points to deduct from loser (about 1/3 of what winner gained, minimum 1)
+    const pointsToDeduct = Math.max(1, Math.ceil(totalPointsGained / 3));
+    
     // Update loser stats
     await db.update(players)
       .set({
         losses: (loser.losses ?? 0) + 1,
         winStreak: 0,
+        points: Math.max(0, (loser.points ?? 0) - pointsToDeduct), // Ensure points don't go below 0
         updatedAt: new Date()
       })
       .where(eq(players.id, loserId));
