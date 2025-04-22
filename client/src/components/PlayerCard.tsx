@@ -1,13 +1,15 @@
 import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import { Player } from "@/data/players";
 import { 
-  FaTimes, FaCrown, FaUserAlt, FaTrophy, FaSkull, 
-  FaFire, FaMedal, FaChartBar, FaRegListAlt, 
-  FaRegCalendarAlt, FaShieldAlt, FaCrosshairs, FaChessKnight
+  FaTimes, FaUserAlt, FaChartBar, FaRegListAlt, FaCrown,
+  FaRegCalendarAlt, FaCrosshairs, FaChessKnight, FaTrophy,
+  FaSkull, FaFire, FaMedal, FaShieldAlt
 } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { generateCombatTitle, generateDistinctiveTitle } from "@/lib/titleGenerator";
+import { PlayerBadges } from "./PlayerBadges";
+import { getPlayerBadge, getNextBadge, getPointsForNextBadge } from "@/lib/badgeSystem";
 
 interface PlayerCardProps {
   player: Player;
@@ -31,25 +33,23 @@ const PlayerCard = memo(({ player, onClose }: PlayerCardProps) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }, []);
   
-  // Memoized function to get color for rank tier
-  const getRankTierColor = useCallback(() => {
-    if (player.isRetired) return { color: "#C0C0C0", bg: "rgba(192, 192, 192, 0.15)" };
-    
-    if (player.points >= 250) return { color: "#FF6B6B", bg: "rgba(255, 107, 107, 0.15)" };
-    if (player.points >= 180) return { color: "#4D96FF", bg: "rgba(77, 150, 255, 0.15)" };
-    if (player.points >= 100) return { color: "#9FE6A0", bg: "rgba(159, 230, 160, 0.15)" };
-    return { color: "#FFBD35", bg: "rgba(255, 189, 53, 0.15)" };
-  }, [player.isRetired, player.points]);
+  // Get player badge and tier information from the badge system
+  const playerBadge = useMemo(() => getPlayerBadge(player), [player]);
+  const nextBadge = useMemo(() => getNextBadge(player), [player]);
+  const pointsForNextBadge = useMemo(() => getPointsForNextBadge(player), [player]);
   
-  // Memoized function to get rank tier name
+  // Memoized function to get color for rank tier based on the badge
+  const getRankTierColor = useCallback(() => {
+    return { 
+      color: playerBadge.color, 
+      bg: `${playerBadge.color}15` // Add 15% opacity version for background
+    };
+  }, [playerBadge]);
+  
+  // Memoized function to get rank tier name based on the badge
   const getRankTierName = useCallback(() => {
-    if (player.isRetired) return "Retired Legend";
-    
-    if (player.points >= 250) return "Astrz Prime";
-    if (player.points >= 180) return "Astrz Vanguard";
-    if (player.points >= 100) return "Astrz Challenger";
-    return "Astrz Edge";
-  }, [player.isRetired, player.points]);
+    return playerBadge.name;
+  }, [playerBadge]);
   
   // Animation effects
   useEffect(() => {
@@ -119,6 +119,11 @@ const PlayerCard = memo(({ player, onClose }: PlayerCardProps) => {
                   <span className="text-sm font-medium bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
                     {player.combatTitle || generateDistinctiveTitle(player)}
                   </span>
+                </div>
+                
+                {/* Player badges */}
+                <div className="mt-3">
+                  <PlayerBadges player={player} showAll={false} size="sm" />
                 </div>
               </div>
             </div>

@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateCombatTitle, generateDistinctiveTitle } from "@/lib/titleGenerator";
+import { PlayerBadges } from "./PlayerBadges";
+import { getPlayerBadge } from "@/lib/badgeSystem";
 
 interface LeaderboardProps {
   players: Player[];
@@ -105,41 +107,10 @@ const PlayerRow = memo(({
       
       <div className="col-span-3 md:col-span-4 text-center">
         <div className="flex items-center justify-center">
-          {/* Combat Badge */}
-          {player.isRetired ? (
-            <div className="flex items-center justify-center bg-gray-800/40 rounded-lg px-3 py-1.5 border border-gray-600/30">
-              <div className="bg-gray-700/70 rounded-full p-1.5 mr-2 animate-pulse">
-                <FaMedal className="text-gray-300" size={14} />
-              </div>
-              <span className="text-sm font-medium text-gray-300">Retired Legend</span>
-            </div>
-          ) : (
-            <div className="flex flex-col md:flex-row items-center gap-2">
-              <div 
-                className="flex items-center justify-center rounded-lg px-3 py-1.5 border animate-shimmer" 
-                style={{ 
-                  backgroundColor: `${playerTier.backgroundColor}90`,
-                  borderColor: `${playerTier.color}40`
-                }}
-              >
-                <div 
-                  className="rounded-full p-1.5 mr-2 animate-pulse" 
-                  style={{ backgroundColor: `${playerTier.color}30` }}
-                >
-                  {playerTier.name === "Astrz Prime" && <FaCrown className="text-yellow-400" size={14} />}
-                  {playerTier.name === "Astrz Vanguard" && <FaSkull className="text-blue-400" size={14} />}
-                  {playerTier.name === "Astrz Challenger" && <FaFireAlt className="text-green-400" size={14} />}
-                  {playerTier.name === "Astrz Edge" && <FaTrophy className="text-orange-400" size={14} />}
-                </div>
-                <span 
-                  className="text-sm font-medium" 
-                  style={{ color: playerTier.color }}
-                >
-                  {playerTier.name}
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Combat Badge - Using our new badge system */}
+          <div className="flex flex-col md:flex-row items-center justify-center">
+            <PlayerBadges player={player} size="sm" />
+          </div>
         </div>
       </div>
       
