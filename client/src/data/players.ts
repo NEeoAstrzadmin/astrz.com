@@ -81,13 +81,25 @@ export interface PlayerMatchup {
   opponent?: Player; // Enhanced with player details when returned from API
 }
 
-export const recordMatch = async (winnerId: number, loserId: number): Promise<void> => {
+export const recordMatch = async (
+  winnerId: number, 
+  loserId: number, 
+  winnerData?: {
+    wins?: number,
+    losses?: number,
+    winStreak?: number
+  }
+): Promise<void> => {
   const response = await fetch('/api/matches', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ winnerId, loserId }),
+    body: JSON.stringify({ 
+      winnerId, 
+      loserId,
+      winnerData
+    }),
   });
   if (!response.ok) {
     throw new Error('Failed to record match');
