@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import PlayerCard from "./PlayerCard";
 // AI prediction component removed to optimize RAM usage
 import { Player } from "@/data/players";
@@ -27,6 +27,139 @@ interface RankTier {
   backgroundColor: string;
 }
 
+// Memoized player row to avoid unnecessary re-renders
+const PlayerRow = memo(({ 
+  player, 
+  index, 
+  isTopThree, 
+  crownColor, 
+  playerTier, 
+  isVisible, 
+  onClick, 
+  formatNumber 
+}: { 
+  player: Player;
+  index: number;
+  isTopThree: boolean;
+  crownColor: string;
+  playerTier: RankTier;
+  isVisible: boolean;
+  onClick: (player: Player) => void;
+  formatNumber: (num: number) => string;
+}) => {
+  return (
+    <div 
+      key={player.rank} 
+      className={`grid grid-cols-12 py-4 px-5 items-center hover:bg-gray-800/30 ${
+        isTopThree ? 'bg-gray-800/20' : ''
+      } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+      style={{ 
+        borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
+        transitionDelay: `${index * 30}ms`
+      }}
+      onClick={() => onClick(player)}
+    >
+      <div className="col-span-1 font-mono text-lg font-semibold flex items-center">
+        {player.rank <= 3 && !player.isRetired && (
+          <FaCrown 
+            className="mr-2 inline" 
+            style={{ color: crownColor }}
+            size={player.rank === 1 ? 18 : 14}
+          />
+        )}
+        <span className={`${isTopThree ? "text-white" : "text-gray-500"} ${player.rank <= 3 ? "hidden md:inline" : ""}`}>
+          {player.rank}
+        </span>
+      </div>
+      
+      <div className="col-span-5 md:col-span-4 flex items-center">
+        {/* Player Name and Combat Title */}
+        <div className="font-medium text-white hover:text-purple-300 transition-colors text-md">
+          {player.name}
+          
+          {/* Combat title */}
+          <div className="text-xs text-gray-400 flex items-center mt-0.5">
+            <FaChessKnight className="text-purple-500 mr-1 opacity-75" size={10} />
+            <span className="text-gray-400 hover:text-purple-300 transition-colors">
+              {player.combatTitle || generateDistinctiveTitle(player)}
+            </span>
+          </div>
+          
+          {/* Rank Badge - Only shown on medium and larger screens */}
+          <div className="hidden md:block mt-1">
+            <Badge 
+              className="text-[10px] font-normal"
+              style={{ 
+                backgroundColor: playerTier.backgroundColor,
+                color: playerTier.color,
+                borderLeft: `2px solid ${playerTier.color}`
+              }}
+            >
+              {playerTier.name}
+            </Badge>
+          </div>
+        </div>
+      </div>
+      
+      <div className="col-span-3 md:col-span-4 text-center">
+        <div className="flex items-center justify-center">
+          {/* Combat Badge */}
+          {player.isRetired ? (
+            <div className="flex items-center justify-center bg-gray-800/40 rounded-lg px-3 py-1.5 border border-gray-600/30">
+              <div className="bg-gray-700/70 rounded-full p-1.5 mr-2 animate-pulse">
+                <FaMedal className="text-gray-300" size={14} />
+              </div>
+              <span className="text-sm font-medium text-gray-300">Retired Legend</span>
+            </div>
+          ) : (
+            <div className="flex flex-col md:flex-row items-center gap-2">
+              <div 
+                className="flex items-center justify-center rounded-lg px-3 py-1.5 border animate-shimmer" 
+                style={{ 
+                  backgroundColor: `${playerTier.backgroundColor}90`,
+                  borderColor: `${playerTier.color}40`
+                }}
+              >
+                <div 
+                  className="rounded-full p-1.5 mr-2 animate-pulse" 
+                  style={{ backgroundColor: `${playerTier.color}30` }}
+                >
+                  {playerTier.name === "Astrz Prime" && <FaCrown className="text-yellow-400" size={14} />}
+                  {playerTier.name === "Astrz Vanguard" && <FaSkull className="text-blue-400" size={14} />}
+                  {playerTier.name === "Astrz Challenger" && <FaFireAlt className="text-green-400" size={14} />}
+                  {playerTier.name === "Astrz Edge" && <FaTrophy className="text-orange-400" size={14} />}
+                </div>
+                <span 
+                  className="text-sm font-medium" 
+                  style={{ color: playerTier.color }}
+                >
+                  {playerTier.name}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div 
+        className={`col-span-3 text-right font-mono font-bold text-lg ${
+          player.isRetired
+            ? 'text-gray-400'
+            : player.rank === 1 
+              ? 'text-yellow-400' 
+              : player.rank <= 3 
+                ? 'text-white' 
+                : 'text-purple-400'
+        }`}
+      >
+        {formatNumber(player.points)}
+      </div>
+    </div>
+  );
+});
+
 export default function Leaderboard({ players }: LeaderboardProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [showPlayerCard, setShowPlayerCard] = useState(false);
@@ -46,8 +179,8 @@ export default function Leaderboard({ players }: LeaderboardProps) {
     { name: "Astrz Edge", color: "#FFBD35", minPoints: 0, backgroundColor: "rgba(255, 189, 53, 0.15)" }
   ];
   
-  // Get player's rank tier based on points
-  const getPlayerRankTier = (points: number, isRetired?: boolean): RankTier => {
+  // Memoized function to get player's rank tier based on points
+  const getPlayerRankTier = useCallback((points: number, isRetired?: boolean): RankTier => {
     if (isRetired) {
       return {
         name: "Retired Legend",
@@ -57,62 +190,85 @@ export default function Leaderboard({ players }: LeaderboardProps) {
       };
     }
     return rankTiers.find(tier => points >= tier.minPoints) || rankTiers[rankTiers.length - 1];
-  };
+  }, [rankTiers, silverColor]);
   
-  // Get crown color based on rank position
-  const getCrownColor = (rank: number) => {
+  // Memoized function to get crown color based on rank position
+  const getCrownColor = useCallback((rank: number) => {
     if (rank === 1) return goldColor;
     if (rank === 2) return silverColor;
     if (rank === 3) return bronzeColor;
     return "";
-  };
+  }, [goldColor, silverColor, bronzeColor]);
   
-  // Handle player selection
-  const handlePlayerClick = (player: Player) => {
+  // Memoized handler for player selection
+  const handlePlayerClick = useCallback((player: Player) => {
     setSelectedPlayer(player);
     setShowPlayerCard(true);
-  };
+  }, []);
 
-  // Filter out retired players for active leaderboards
-  const activePlayers = players.filter(player => !player.isRetired);
-  const retiredPlayers = players.filter(player => player.isRetired);
+  // Memoize filtered and sorted player lists
+  const activePlayers = useMemo(() => 
+    players.filter(player => !player.isRetired),
+    [players]
+  );
   
-  // Sort by different criteria
-  const sortedByRank = [...activePlayers].sort((a, b) => a.rank - b.rank);
+  const retiredPlayers = useMemo(() => 
+    players.filter(player => player.isRetired),
+    [players]
+  );
+  
+  // Sort by different criteria - memoized to avoid redundant calculations
+  const sortedByRank = useMemo(() => 
+    [...activePlayers].sort((a, b) => a.rank - b.rank),
+    [activePlayers]
+  );
+  
   // Include all players (both active and retired) in the kill rankings
-  const sortedByKills = [...players].sort((a, b) => {
-    return (b.kills || 0) - (a.kills || 0);
-  });
-  const sortedByWinStreak = [...activePlayers].sort((a, b) => {
-    return (b.winStreak || 0) - (a.winStreak || 0);
-  });
+  const sortedByKills = useMemo(() => 
+    [...players].sort((a, b) => (b.kills || 0) - (a.kills || 0)),
+    [players]
+  );
+  
+  const sortedByWinStreak = useMemo(() => 
+    [...activePlayers].sort((a, b) => (b.winStreak || 0) - (a.winStreak || 0)),
+    [activePlayers]
+  );
 
-  // Staggered animation on mount
-  useEffect(() => {
+  // Memoized function to handle staggered animation - reduced memory usage
+  const setupStaggeredAnimation = useCallback(() => {
     const categories = ['overall', 'kills', 'winstreak', 'retired'];
+    // Initialize visible rows state with all false values first
+    const initialVisibleState: Record<string, boolean> = {};
     
+    // Update in a single batch to avoid multiple re-renders
     categories.forEach(category => {
-      let source = 
+      const source = 
         category === 'overall' ? sortedByRank :
         category === 'kills' ? sortedByKills :
         category === 'winstreak' ? sortedByWinStreak :
         retiredPlayers;
-    
+      
       source.forEach((player, index) => {
+        // Stagger the animation with setTimeout
         setTimeout(() => {
           setVisibleRows(prev => ({
             ...prev,
             [`${category}-${player.rank}`]: true
           }));
-        }, 30 * index);
+        }, 15 * index); // Reduced delay for faster animation
       });
     });
-  }, [players]);
+  }, [sortedByRank, sortedByKills, sortedByWinStreak, retiredPlayers]);
+  
+  // Run animation setup only once on component mount
+  useEffect(() => {
+    setupStaggeredAnimation();
+  }, [setupStaggeredAnimation]);
 
-  // Format large numbers with commas
-  const formatNumber = (num: number): string => {
+  // Memoized function to format large numbers with commas
+  const formatNumber = useCallback((num: number): string => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
+  }, []);
 
   return (
     <section id="leaderboard" className="space-y-6 relative">
