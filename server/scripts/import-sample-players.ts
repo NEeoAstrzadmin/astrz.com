@@ -1,13 +1,15 @@
 /**
  * Import sample players for testing the Astrz Combat Leaderboard
  */
-import { storage } from "../storage";
+import { db } from '../db';
+import { players } from '../../shared/schema';
+import { eq } from 'drizzle-orm';
 
 async function importSamplePlayers() {
   console.log("Starting player import...");
 
   // Sample player data
-  const players = [
+  const samplePlayers = [
     { 
       rank: 1, 
       name: "Wido", 
@@ -415,17 +417,28 @@ async function importSamplePlayers() {
     }
   ];
 
-  // Import each player
-  for (const player of players) {
-    try {
-      await storage.createPlayer(player);
-      console.log(`Imported player: ${player.name}`);
-    } catch (error) {
-      console.error(`Error importing player ${player.name}:`, error);
-    }
-  }
+  try {
+    // Clear existing players to avoid duplicates
+    await db.delete(players);
+    console.log("Cleared existing players");
 
-  console.log("Player import completed!");
+    // Import each player in a batch
+    for (const playerData of samplePlayers) {
+      try {
+        await db.insert(players).values({
+          ...playerData,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      } catch (error) {
+        console.error(`Error importing player ${playerData.name}:`, error);
+      }
+    }
+
+    console.log("Player import completed successfully!");
+  } catch (error) {
+    console.error("Error during import:", error);
+  }
 }
 
 // Run the import

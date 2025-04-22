@@ -375,7 +375,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
               <div className="col-span-3 text-right">POINTS</div>
             </div>
             
-            {/* Player Rows */}
+            {/* Player Rows - Using optimized PlayerRow component */}
             <div className="divide-y divide-gray-800/50">
               {sortedByRank.map((player, index) => {
                 const isTopThree = player.rank <= 3;
@@ -384,129 +384,17 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                 const isVisible = visibleRows[`overall-${player.rank}`];
                 
                 return (
-                  <div 
-                    key={player.rank} 
-                    className={`grid grid-cols-12 py-4 px-5 items-center hover:bg-gray-800/30 ${
-                      isTopThree ? 'bg-gray-800/20' : ''
-                    } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
-                      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                    }`}
-                    style={{ 
-                      borderLeft: isTopThree ? `4px solid ${crownColor}` : undefined,
-                      transitionDelay: `${index * 30}ms`
-                    }}
-                    onClick={() => handlePlayerClick(player)}
-                  >
-                    <div className="col-span-1 font-mono text-lg font-semibold flex items-center">
-                      {player.rank <= 3 && !player.isRetired && (
-                        <FaCrown 
-                          className="mr-2 inline" 
-                          style={{ color: crownColor }}
-                          size={player.rank === 1 ? 18 : 14}
-                        />
-                      )}
-                      <span className={`${isTopThree ? "text-white" : "text-gray-500"} ${player.rank <= 3 ? "hidden md:inline" : ""}`}>
-                        {player.rank}
-                      </span>
-                    </div>
-                    
-                    <div className="col-span-5 md:col-span-4 flex items-center">
-                      {/* Player Name and Combat Title */}
-                      <div className="font-medium text-white hover:text-purple-300 transition-colors text-md">
-                        {player.name}
-                        
-                        {/* Combat title */}
-                        <div className="text-xs text-gray-400 flex items-center mt-0.5">
-                          <FaChessKnight className="text-purple-500 mr-1 opacity-75" size={10} />
-                          <span className="text-gray-400 hover:text-purple-300 transition-colors">
-                            {player.combatTitle || generateDistinctiveTitle(player)}
-                          </span>
-                        </div>
-                        
-                        {/* Rank Badge - Only shown on medium and larger screens */}
-                        <div className="hidden md:block mt-1">
-                          <Badge 
-                            className="text-[10px] font-normal"
-                            style={{ 
-                              backgroundColor: playerTier.backgroundColor,
-                              color: playerTier.color,
-                              borderLeft: `2px solid ${playerTier.color}`
-                            }}
-                          >
-                            {playerTier.name}
-                          </Badge>
-                        </div>
-                        
-                        {/* AI Analysis button for mobile removed to optimize RAM usage */}
-                      </div>
-                    </div>
-                    
-                    <div className="col-span-4 text-center">
-                      <div className="flex items-center justify-center">
-                        {/* Combat Badge */}
-                        {player.isRetired ? (
-                          <div className="flex items-center justify-center bg-gray-800/40 rounded-lg px-3 py-1.5 border border-gray-600/30">
-                            <div className="bg-gray-700/70 rounded-full p-1.5 mr-2 animate-pulse">
-                              <FaMedal className="text-gray-300" size={14} />
-                            </div>
-                            <span className="text-sm font-medium text-gray-300">Retired Legend</span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col md:flex-row items-center gap-2">
-                            <div 
-                              className="flex items-center justify-center rounded-lg px-3 py-1.5 border animate-shimmer" 
-                              style={{ 
-                                backgroundColor: `${playerTier.backgroundColor}90`,
-                                borderColor: `${playerTier.color}40`
-                              }}
-                            >
-                              <div 
-                                className="rounded-full p-1.5 mr-2 animate-pulse" 
-                                style={{ backgroundColor: `${playerTier.color}30` }}
-                              >
-                                {playerTier.name === "Astrz Prime" && <FaCrown className="text-yellow-400" size={14} />}
-                                {playerTier.name === "Astrz Vanguard" && <FaSkull className="text-blue-400" size={14} />}
-                                {playerTier.name === "Astrz Challenger" && <FaFireAlt className="text-green-400" size={14} />}
-                                {playerTier.name === "Astrz Edge" && <FaTrophy className="text-orange-400" size={14} />}
-                              </div>
-                              <span 
-                                className="text-sm font-medium" 
-                                style={{ color: playerTier.color }}
-                              >
-                                {playerTier.name}
-                              </span>
-                            </div>
-                            
-                            {/* AI Analysis button for desktop removed to optimize RAM usage */}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div 
-                      className={`col-span-3 text-right font-mono font-bold text-lg ${
-                        player.isRetired
-                          ? 'text-gray-400'
-                          : player.rank === 1 
-                            ? 'text-yellow-400' 
-                            : player.rank <= 3 
-                              ? 'text-purple-300' 
-                              : 'text-gray-300'
-                      }`}
-                    >
-                      {player.points || ""} 
-                      <span className="text-xs font-normal ml-1 text-gray-500">pts</span>
-                      
-                      {/* Show peak points for all players */}
-                      {player.peakPoints && player.peakPoints > player.points && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          <span className="text-yellow-500 font-medium">
-                            {player.peakPoints}
-                          </span> peak
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <PlayerRow
+                    key={player.id || player.rank}
+                    player={player}
+                    index={index}
+                    isTopThree={isTopThree}
+                    crownColor={crownColor}
+                    playerTier={playerTier}
+                    isVisible={isVisible}
+                    onClick={handlePlayerClick}
+                    formatNumber={formatNumber}
+                  />
                 );
               })}
             </div>
