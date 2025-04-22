@@ -311,11 +311,6 @@ export default function Admin() {
           ...prev,
           opponentId: Number(value)
         };
-      } else if (name === 'playerKills') {
-        return {
-          ...prev,
-          playerKills: Number(value)
-        };
       } else {
         return {
           ...prev,
@@ -330,8 +325,7 @@ export default function Admin() {
     if (!selectedPlayerId) return;
     
     setMatchData({
-      opponentId: 0,
-      playerKills: 0
+      opponentId: 0
     });
     
     setMatchDialogOpen(true);
@@ -351,8 +345,7 @@ export default function Admin() {
       // Record match using the API
       await recordMatch(
         selectedPlayerId,  // Winner ID
-        matchData.opponentId, // Loser ID
-        matchData.playerKills
+        matchData.opponentId // Loser ID
       );
       
       // Refresh player data
@@ -734,28 +727,12 @@ export default function Admin() {
               </div>
             )}
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="playerKills" className="text-right">
-                Kills
-              </Label>
-              <Input
-                id="playerKills"
-                name="playerKills"
-                type="number"
-                className="col-span-3 bg-gray-800 border-gray-700"
-                value={matchData.playerKills}
-                onChange={handleMatchInputChange}
-                min="0"
-              />
-            </div>
-            
             {matchData.opponentId > 0 && (
               <div className="col-span-4 text-sm text-gray-400 mt-2 p-3 bg-purple-900/10 border border-purple-900/20 rounded">
                 <p className="mb-2">Match points will be calculated based on:</p>
                 <ul className="list-disc list-inside space-y-1 text-xs">
                   <li>Rank difference between players</li>
                   <li>Win/loss record bonus (every 10 net wins = +1 point)</li>
-                  <li>Kill count (more kills = more points)</li>
                 </ul>
               </div>
             )}
