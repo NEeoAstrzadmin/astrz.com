@@ -29,8 +29,14 @@ export default function Admin() {
   const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<{
     opponentId: number;
+    winnerKills: number;
+    winStreakUpdate: number;
+    matchNotes: string;
   }>({
-    opponentId: 0
+    opponentId: 0,
+    winnerKills: 0,
+    winStreakUpdate: 1,
+    matchNotes: ""
   });
   
   // State to store opponent matchup data
@@ -325,7 +331,10 @@ export default function Admin() {
     if (!selectedPlayerId) return;
     
     setMatchData({
-      opponentId: 0
+      opponentId: 0,
+      winnerKills: 0,
+      winStreakUpdate: 1,
+      matchNotes: ""
     });
     
     setMatchDialogOpen(true);
@@ -342,10 +351,17 @@ export default function Admin() {
       setSaving(true);
       setError(null);
       
-      // Record match using the API
+      // Prepare match data with custom stats
+      const winnerData = {
+        kills: Number(matchData.winnerKills),
+        winStreak: Number(matchData.winStreakUpdate)
+      };
+      
+      // Record match using the API with custom stats
       await recordMatch(
         selectedPlayerId,  // Winner ID
-        matchData.opponentId // Loser ID
+        matchData.opponentId, // Loser ID
+        winnerData // Custom stats
       );
       
       // Refresh player data
