@@ -346,24 +346,7 @@ export default function PlayerCard({ player, onClose }: PlayerCardProps) {
           <div className="text-xs text-gray-500">
             {player.isRetired 
               ? "Retired from active competition" 
-              : (
-                <div className="flex items-center justify-center">
-                  <FaRegCalendarAlt className="mr-1.5" size={10} />
-                  <span>Recent matches: </span>
-                  <div className="ml-1.5 flex space-x-1">
-                    {player.recentMatches?.split('').map((result, i) => (
-                      <div 
-                        key={i}
-                        className={`w-3 h-3 text-xs flex items-center justify-center rounded-full ${
-                          result === 'W' ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'
-                        }`}
-                      >
-                        {result}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
+              : "Active player"
             }
           </div>
         </div>
