@@ -95,20 +95,6 @@ const PlayerRow = memo(({
               {player.combatTitle || generateDistinctiveTitle(player)}
             </span>
           </div>
-          
-          {/* Rank Badge - Only shown on medium and larger screens */}
-          <div className="hidden md:block mt-1">
-            <Badge 
-              className="text-[10px] font-normal"
-              style={{ 
-                backgroundColor: playerTier.backgroundColor,
-                color: playerTier.color,
-                borderLeft: `2px solid ${playerTier.color}`
-              }}
-            >
-              {playerTier.name}
-            </Badge>
-          </div>
         </div>
       </div>
       
@@ -446,19 +432,7 @@ export default function Leaderboard({ players }: LeaderboardProps) {
                           </span>
                         </div>
                         
-                        {/* Player tier badge - only on medium screens and up */}
-                        <div className="hidden md:block mt-1">
-                          <Badge 
-                            className="text-[10px] font-normal"
-                            style={{ 
-                              backgroundColor: playerTier.backgroundColor,
-                              color: playerTier.color,
-                              borderLeft: `2px solid ${playerTier.color}`
-                            }}
-                          >
-                            {playerTier.name}
-                          </Badge>
-                        </div>
+
                       </div>
                     </div>
                     

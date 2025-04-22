@@ -22,7 +22,7 @@ export const badges: Badge[] = [
     name: 'Astrz Prime',
     description: 'Reached the pinnacle of combat excellence',
     icon: FaCrown,
-    color: '#9D4EDD', // Deep purple
+    color: '#FFD700', // Gold
     pointThreshold: 300
   },
   {
@@ -30,7 +30,7 @@ export const badges: Badge[] = [
     name: 'Astrz Warbringer',
     description: 'A devastating force on the battlefield',
     icon: FaSkull,
-    color: '#7B2CBF', // Rich purple
+    color: '#FF4500', // Red-orange
     pointThreshold: 240
   },
   {
@@ -38,7 +38,7 @@ export const badges: Badge[] = [
     name: 'Astrz Vanguard',
     description: 'Leading the charge in combat',
     icon: FaShieldAlt,
-    color: '#5A189A', // Royal purple
+    color: '#1E90FF', // Dodger blue
     pointThreshold: 180
   },
   {
@@ -46,7 +46,7 @@ export const badges: Badge[] = [
     name: 'Astrz Enforcer',
     description: 'Imposing order through combat prowess',
     icon: FaFire, // Using FaFire for Enforcer badge
-    color: '#3C096C', // Deep violet
+    color: '#9932CC', // Dark orchid (purple)
     pointThreshold: 120
   },
   {
@@ -54,7 +54,7 @@ export const badges: Badge[] = [
     name: 'Astrz Cadet',
     description: 'Beginning the journey to combat excellence',
     icon: FaStar,
-    color: '#240046', // Dark violet
+    color: '#32CD32', // Lime green
     pointThreshold: 0
   }
 ];
