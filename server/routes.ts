@@ -103,6 +103,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const matchSchema = z.object({
         winnerId: z.number(),
         loserId: z.number(),
+        matchData: z.object({
+          location: z.string().optional(),
+          score: z.string().optional(),
+          matchDate: z.string().optional() // ISO string date format
+        }).optional(),
         winnerData: z.object({
           kills: z.number().optional(),
           winStreak: z.number().optional()
@@ -122,7 +127,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         validatedData.data.winnerId,
         validatedData.data.loserId,
         winnerKills,
-        validatedData.data.winnerData // Pass the full winnerData object
+        validatedData.data.winnerData, // Pass the full winnerData object
+        validatedData.data.matchData // Pass the match data object
       );
       
       res.json({ message: "Match recorded successfully" });

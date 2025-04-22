@@ -21,7 +21,8 @@ export interface IStorage {
     winnerId: number, 
     loserId: number, 
     winnerKills?: number, 
-    winnerData?: { kills?: number, winStreak?: number }
+    winnerData?: { kills?: number, winStreak?: number },
+    matchData?: { location?: string, score?: string, matchDate?: string }
   ): Promise<void>;
   calculatePointsForMatch(winnerRank: number, loserRank: number): number;
   
@@ -123,7 +124,8 @@ export class DatabaseStorage implements IStorage {
     winnerId: number, 
     loserId: number, 
     winnerKills: number = 0, 
-    winnerData?: { kills?: number, winStreak?: number }
+    winnerData?: { kills?: number, winStreak?: number },
+    matchData?: { location?: string, score?: string, matchDate?: string }
   ): Promise<void> {
     // Get winner and loser
     const [winner] = await db.select().from(players).where(eq(players.id, winnerId));
@@ -181,11 +183,15 @@ export class DatabaseStorage implements IStorage {
         eq(playerMatchups.opponentId, loserId)
       ));
     
+    const matchDate = matchData?.matchDate ? new Date(matchData.matchDate) : new Date();
+    
     if (existingWinnerMatchup) {
       await db.update(playerMatchups)
         .set({
           wins: (existingWinnerMatchup.wins ?? 0) + 1,
-          lastMatchDate: new Date()
+          lastMatchDate: matchDate,
+          lastMatchLocation: matchData?.location || existingWinnerMatchup.lastMatchLocation,
+          lastMatchScore: matchData?.score || existingWinnerMatchup.lastMatchScore
         })
         .where(and(
           eq(playerMatchups.playerId, winnerId),
@@ -197,7 +203,10 @@ export class DatabaseStorage implements IStorage {
           playerId: winnerId,
           opponentId: loserId,
           wins: 1,
-          losses: 0
+          losses: 0,
+          lastMatchDate: matchDate,
+          lastMatchLocation: matchData?.location,
+          lastMatchScore: matchData?.score
         });
     }
     
@@ -214,7 +223,9 @@ export class DatabaseStorage implements IStorage {
       await db.update(playerMatchups)
         .set({
           losses: (existingLoserMatchup.losses ?? 0) + 1,
-          lastMatchDate: new Date()
+          lastMatchDate: matchDate,
+          lastMatchLocation: matchData?.location || existingLoserMatchup.lastMatchLocation,
+          lastMatchScore: matchData?.score ? reverseScore(matchData.score) : existingLoserMatchup.lastMatchScore
         })
         .where(and(
           eq(playerMatchups.playerId, loserId),
@@ -226,7 +237,10 @@ export class DatabaseStorage implements IStorage {
           playerId: loserId,
           opponentId: winnerId,
           wins: 0,
-          losses: 1
+          losses: 1,
+          lastMatchDate: matchDate,
+          lastMatchLocation: matchData?.location,
+          lastMatchScore: matchData?.score ? reverseScore(matchData.score) : undefined
         });
     }
 
