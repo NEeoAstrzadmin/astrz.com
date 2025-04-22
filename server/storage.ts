@@ -17,7 +17,12 @@ export interface IStorage {
   updatePlayer(id: number, player: Partial<InsertPlayer>): Promise<Player | undefined>;
   deletePlayer(id: number): Promise<boolean>;
   updateRanks(): Promise<void>;
-  recordMatch(winnerId: number, loserId: number, winnerKills: number): Promise<void>;
+  recordMatch(
+    winnerId: number, 
+    loserId: number, 
+    winnerKills?: number, 
+    winnerData?: { kills?: number, winStreak?: number }
+  ): Promise<void>;
   calculatePointsForMatch(winnerRank: number, loserRank: number): number;
   
   // Player matchup methods
@@ -114,7 +119,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async recordMatch(winnerId: number, loserId: number, winnerKills: number = 0): Promise<void> {
+  async recordMatch(
+    winnerId: number, 
+    loserId: number, 
+    winnerKills: number = 0, 
+    winnerData?: { kills?: number, winStreak?: number }
+  ): Promise<void> {
     // Get winner and loser
     const [winner] = await db.select().from(players).where(eq(players.id, winnerId));
     const [loser] = await db.select().from(players).where(eq(players.id, loserId));
@@ -133,11 +143,18 @@ export class DatabaseStorage implements IStorage {
     
     const totalPointsGained = pointsGained + bonusPoints;
 
-    // Update winner stats
+    // Set the default values for custom stats
+    const updatedKills = (winner.kills ?? 0) + (winnerKills || 0);
+    const updatedWinStreak = winnerData?.winStreak !== undefined 
+      ? winnerData.winStreak 
+      : (winner.winStreak ?? 0) + 1;
+
+    // Update winner stats with custom values if provided
     await db.update(players)
       .set({
         wins: (winner.wins ?? 0) + 1,
-        winStreak: (winner.winStreak ?? 0) + 1,
+        winStreak: updatedWinStreak,
+        kills: updatedKills,
         points: (winner.points ?? 0) + totalPointsGained,
         peakPoints: Math.max((winner.peakPoints ?? 0), (winner.points ?? 0) + totalPointsGained),
         updatedAt: new Date()

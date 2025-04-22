@@ -102,7 +102,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const matchSchema = z.object({
         winnerId: z.number(),
-        loserId: z.number()
+        loserId: z.number(),
+        winnerData: z.object({
+          kills: z.number().optional(),
+          winStreak: z.number().optional()
+        }).optional()
       });
       
       const validatedData = matchSchema.safeParse(req.body);
@@ -111,9 +115,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: validatedData.error });
       }
       
+      // Extract the winner kills if provided in winnerData
+      const winnerKills = validatedData.data.winnerData?.kills || 0;
+      
       await storage.recordMatch(
         validatedData.data.winnerId,
-        validatedData.data.loserId
+        validatedData.data.loserId,
+        winnerKills,
+        validatedData.data.winnerData // Pass the full winnerData object
       );
       
       res.json({ message: "Match recorded successfully" });
