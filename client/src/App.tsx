@@ -8,14 +8,14 @@ import Admin from "@/pages/Admin";
 import { PlayerProvider } from "@/contexts/PlayerContext";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import AdminLogin from "@/pages/AdminLogin";
+import AuthPage from "@/pages/auth-page";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <ProtectedRoute path="/admin" component={Admin} />
-      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );

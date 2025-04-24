@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FaCrown } from "react-icons/fa";
+import { FaCrown, FaUserCog } from "react-icons/fa";
+import { Link } from "wouter";
 
 interface HeaderProps {
   searchTerm: string;
@@ -34,7 +35,7 @@ export default function Header({ searchTerm, setSearchTerm }: HeaderProps) {
           </button>
         </div>
         
-        <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:block mt-4 md:mt-0`}>
+        <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:flex mt-4 md:mt-0 flex-row items-center gap-4`}>
           <div className="relative max-w-xs md:max-w-sm">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
               <svg className="h-5 w-5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -49,6 +50,10 @@ export default function Header({ searchTerm, setSearchTerm }: HeaderProps) {
               className="w-full pl-10 pr-4 py-2 bg-gray-800/70 border border-purple-900/30 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none text-white text-sm"
             />
           </div>
+          
+          <Link href="/admin" className="flex items-center text-purple-400 hover:text-purple-300 transition-colors">
+            <FaUserCog className="mr-1" /> Admin
+          </Link>
         </div>
       </div>
     </header>
