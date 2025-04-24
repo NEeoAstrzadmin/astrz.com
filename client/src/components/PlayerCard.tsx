@@ -63,10 +63,14 @@ const PlayerCard = memo(({ player, onClose }: PlayerCardProps) => {
   }, [player.points]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fadeIn">
       <div 
-        className="relative bg-gradient-to-b from-gray-900 to-gray-950 border border-purple-900/50 rounded-xl shadow-2xl max-w-lg w-full animate-scaleIn overflow-hidden"
-        style={{ maxHeight: '90vh' }}
+        className="relative bg-gradient-to-b from-gray-900 to-gray-950 rounded-xl shadow-xl max-w-lg w-full animate-scaleIn overflow-hidden"
+        style={{ 
+          maxHeight: '90vh',
+          border: `1px solid ${getRankTierColor().color}30`,
+          boxShadow: `0 0 30px ${getRankTierColor().color}20, 0 0 100px ${getRankTierColor().color}05`
+        }}
       >
         {/* Close button */}
         <button 

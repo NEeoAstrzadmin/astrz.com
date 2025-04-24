@@ -57,15 +57,16 @@ const PlayerRow = memo(({
       key={player.rank} 
       className={`grid grid-cols-12 py-4 px-5 items-center ${
         isTopThree ? 'bg-gray-900/40' : 'bg-gray-900/20'
-      } hover:translate-x-1 transition-all transform cursor-pointer card-hover ${
+      } hover:translate-x-1 transition-all transform cursor-pointer card-hover rounded-md ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{ 
         borderLeft: `4px solid ${isTopThree ? crownColor : badge.color}`,
+        borderRight: `1px solid ${badge.color}10`,
         borderTop: `1px solid ${badge.color}20`,
         borderBottom: `1px solid ${badge.color}20`,
-        background: `linear-gradient(to right, ${badge.color}10, transparent)`,
-        boxShadow: `inset 0 0 20px ${badge.color}10`,
+        background: `linear-gradient(to right, ${badge.color}15, ${badge.color}05)`,
+        boxShadow: `inset 0 0 20px ${badge.color}10, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`,
         transitionDelay: `${index * 30}ms`
       }}
       onClick={() => onClick(player)}
