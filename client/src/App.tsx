@@ -71,6 +71,33 @@ const AnimationStyles = () => {
         to { opacity: 1; transform: translateY(0); }
       }
       
+      /* Scale in animation */
+      @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      
+      .animate-scaleIn {
+        animation: scaleIn 0.3s ease-out forwards;
+      }
+      
+      /* Slower ping animation for subtle effects */
+      @keyframes pingSlower {
+        0% { transform: scale(1); opacity: 0.8; }
+        70% { transform: scale(1.05); opacity: 0.3; }
+        100% { transform: scale(1); opacity: 0.8; }
+      }
+      
+      .animate-pingSlower {
+        animation: pingSlower 3s ease-in-out infinite;
+      }
+      
+      /* Shimmer animation for cards */
+      .float-on-hover:hover {
+        transform: translateY(-4px);
+        transition: all 0.3s ease;
+      }
+      
       /* Cosmic background with subtle movement */
       .cosmic-bg {
         background-image: 
@@ -85,6 +112,25 @@ const AnimationStyles = () => {
         0% { background-position: 0% 0%; }
         50% { background-position: 100% 100%; }
         100% { background-position: 0% 0%; }
+      }
+      
+      /* Styled scrollbar */
+      .styled-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      .styled-scrollbar::-webkit-scrollbar-track {
+        background: rgba(30, 30, 30, 0.2);
+        border-radius: 10px;
+      }
+      
+      .styled-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(124, 58, 237, 0.4);
+        border-radius: 10px;
+      }
+      
+      .styled-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(124, 58, 237, 0.6);
       }
     `;
     document.head.appendChild(styleSheet);

@@ -63,104 +63,221 @@ const PlayerCard = memo(({ player, onClose }: PlayerCardProps) => {
   }, [player.points]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn">
       <div 
-        className="relative bg-gradient-to-b from-gray-900 to-gray-950 rounded-xl shadow-xl max-w-lg w-full animate-scaleIn overflow-hidden"
+        className="relative bg-gradient-to-b from-gray-900/95 to-gray-950/95 rounded-xl shadow-2xl max-w-2xl w-full animate-scaleIn overflow-hidden border border-gray-800"
         style={{ 
-          maxHeight: '90vh',
-          border: `1px solid ${getRankTierColor().color}30`,
-          boxShadow: `0 0 30px ${getRankTierColor().color}20, 0 0 100px ${getRankTierColor().color}05`
+          maxHeight: '85vh',
+          boxShadow: `0 0 40px ${getRankTierColor().color}30, 0 0 100px ${getRankTierColor().color}10`
         }}
       >
+        {/* Decorative background elements */}
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/10 rounded-full filter blur-3xl"></div>
+        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-indigo-600/10 rounded-full filter blur-3xl"></div>
+        <div className="absolute top-20 left-30 w-2 h-2 bg-purple-500/50 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-40 right-20 w-3 h-3 bg-indigo-500/40 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+        
+        {/* Top accent line */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500/70 via-indigo-500/70 to-purple-500/70"></div>
+        
         {/* Close button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10 hover:rotate-90 transform duration-300"
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10 hover:rotate-90 transform duration-300 bg-gray-800/80 hover:bg-gray-700/80 p-2 rounded-full border border-gray-700/50"
         >
-          <FaTimes size={20} />
+          <FaTimes size={16} />
         </button>
         
         {/* Header */}
         <div className="relative overflow-hidden">
           {/* Background gradient effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 to-blue-900/20 z-0"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 to-indigo-900/20 z-0"></div>
+          <div className="absolute top-0 right-0 w-full h-full overflow-hidden">
+            <svg className="absolute top-0 right-0 opacity-10" width="300" height="300" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style={{stopColor: getRankTierColor().color, stopOpacity: 0.5}} />
+                  <stop offset="100%" style={{stopColor: "#6366F1", stopOpacity: 0.2}} />
+                </linearGradient>
+              </defs>
+              <path d="M0,50 Q25,0 50,50 T100,50" fill="none" stroke="url(#grad)" strokeWidth="0.5" />
+              <path d="M0,60 Q25,10 50,60 T100,60" fill="none" stroke="url(#grad)" strokeWidth="0.5" />
+              <path d="M0,70 Q25,20 50,70 T100,70" fill="none" stroke="url(#grad)" strokeWidth="0.5" />
+              <path d="M0,80 Q25,30 50,80 T100,80" fill="none" stroke="url(#grad)" strokeWidth="0.5" />
+              <path d="M0,90 Q25,40 50,90 T100,90" fill="none" stroke="url(#grad)" strokeWidth="0.5" />
+            </svg>
+          </div>
           
-          <div className="p-6 relative z-1">
-            <div className="flex items-center space-x-4">
-              <div className="bg-purple-900/40 rounded-full p-3 border border-purple-500/30 shadow-lg animate-pulse">
-                <FaUserAlt size={30} className="text-purple-300" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-2xl font-bold text-white">{player.name}</h3>
-                  {player.rank <= 3 && !player.isRetired && (
-                    <FaCrown 
-                      size={16} 
-                      className={player.rank === 1 ? "text-yellow-400" : player.rank === 2 ? "text-gray-300" : "text-amber-600"} 
-                    />
-                  )}
+          <div className="p-8 relative z-1">
+            <div className="flex items-center space-x-5">
+              {/* Player Avatar */}
+              <div className="relative">
+                <div 
+                  className="relative w-18 h-18 rounded-xl p-5 border transition-all duration-300 transform hover:scale-105"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${getRankTierColor().color}20, transparent)`,
+                    borderColor: `${getRankTierColor().color}40`,
+                    boxShadow: `0 0 20px ${getRankTierColor().color}20`
+                  }}
+                >
+                  <playerBadge.icon size={36} className="text-white" style={{ color: getRankTierColor().color }} />
+                  
+                  {/* Animated pulse effect */}
+                  <div className="absolute inset-0 rounded-xl border-2 opacity-50 animate-pingSlower" 
+                    style={{ borderColor: `${getRankTierColor().color}30` }}></div>
                 </div>
                 
-                <div className="flex items-center mt-1">
-                  <Badge 
-                    variant="outline" 
-                    className="mr-2 text-xs px-2 py-0.5"
-                    style={{ 
-                      backgroundColor: getRankTierColor().bg,
-                      color: getRankTierColor().color,
-                      borderColor: `${getRankTierColor().color}50`
+                {/* Rank indicator for top 3 */}
+                {player.rank <= 3 && (
+                  <div 
+                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center border-2 shadow-lg"
+                    style={{
+                      background: player.rank === 1 ? '#FFD700' : player.rank === 2 ? '#C0C0C0' : '#CD7F32',
+                      borderColor: 'rgba(255,255,255,0.2)'
                     }}
                   >
-                    {getRankTierName()}
-                  </Badge>
+                    <span className="text-xs font-bold text-gray-900">{player.rank}</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Player Info */}
+              <div className="flex-1">
+                <div className="flex items-center">
+                  <h3 className="text-3xl font-bold">
+                    <span className="bg-gradient-to-r from-white to-gray-300 inline-block text-transparent bg-clip-text">
+                      {player.name}
+                    </span>
+                  </h3>
                   
-                  <span className="text-sm text-gray-400">Rank #{player.rank}</span>
+                  {/* Retired badge */}
+                  {player.isRetired && (
+                    <Badge 
+                      variant="outline" 
+                      className="ml-3 bg-gray-800/80 text-gray-300 border-gray-600 px-2"
+                    >
+                      Retired Legend
+                    </Badge>
+                  )}
                 </div>
                 
                 {/* Combat Title */}
                 <div className="mt-2 flex items-center">
                   <FaChessKnight className="text-purple-500 mr-2" size={14} />
-                  <span className="text-sm font-medium bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
+                  <span className="text-sm font-medium bg-gradient-to-r from-purple-400 to-indigo-300 bg-clip-text text-transparent">
                     {player.combatTitle || generateDistinctiveTitle(player)}
                   </span>
                 </div>
                 
+                {/* Player stats */}
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <div className="flex items-center bg-gray-800/60 rounded-lg px-2 py-1 border border-gray-700/50">
+                    <div className="flex items-center mr-2">
+                      <div 
+                        className="w-3 h-3 rounded-full mr-1"
+                        style={{ backgroundColor: getRankTierColor().color }}
+                      ></div>
+                      <span className="text-xs font-medium" style={{ color: getRankTierColor().color }}>
+                        {getRankTierName()}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-400">Tier</span>
+                  </div>
+                  
+                  <div className="flex items-center bg-gray-800/60 rounded-lg px-2 py-1 border border-gray-700/50">
+                    <FaTrophy className="text-yellow-500 mr-1 text-xs" />
+                    <span className="text-xs text-white font-medium mr-1">#{player.rank}</span>
+                    <span className="text-xs text-gray-400">Rank</span>
+                  </div>
+                  
+                  <div className="flex items-center bg-gray-800/60 rounded-lg px-2 py-1 border border-gray-700/50">
+                    <FaSkull className="text-red-500 mr-1 text-xs" />
+                    <span className="text-xs text-white font-medium mr-1">{formatNumber(player.kills || 0)}</span>
+                    <span className="text-xs text-gray-400">Kills</span>
+                  </div>
+                  
+                  <div className="flex items-center bg-gray-800/60 rounded-lg px-2 py-1 border border-gray-700/50">
+                    <FaFire className="text-orange-500 mr-1 text-xs" />
+                    <span className="text-xs text-white font-medium mr-1">{winRate}%</span>
+                    <span className="text-xs text-gray-400">Win Rate</span>
+                  </div>
+                </div>
+                
                 {/* Player badges */}
-                <div className="mt-3">
-                  <PlayerBadges player={player} showAll={false} size="sm" />
+                <div className="mt-4">
+                  <PlayerBadges player={player} showAll={true} size="sm" className="flex-wrap gap-1" />
                 </div>
               </div>
             </div>
             
-            {/* Points bar */}
-            <div className="mt-5">
-              <div className="flex justify-between items-center mb-1.5 text-sm">
-                <div className="text-gray-400 flex items-center">
-                  <FaTrophy size={12} className="text-yellow-500 mr-1.5" />
-                  Combat Points
+            {/* Combat Points & Progress */}
+            <div className="mt-6 bg-gray-800/30 rounded-lg p-4 border border-gray-700/40 backdrop-blur-sm">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mr-3">
+                    <FaTrophy size={14} className="text-yellow-400" />
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-300 font-medium">Combat Points</span>
+                    <div className="flex items-center mt-0.5">
+                      <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-indigo-300 bg-clip-text text-transparent">
+                        {formatNumber(player.points)}
+                      </span>
+                      
+                      {player.isRetired && player.peakPoints && (
+                        <div className="flex items-center ml-2 bg-gray-800/80 px-2 py-0.5 rounded-md border border-gray-700/50">
+                          <span className="text-xs text-gray-400 mr-1">Peak:</span>
+                          <span className="text-xs text-yellow-400 font-medium">{formatNumber(player.peakPoints)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="font-mono font-medium text-white">
-                  {player.isRetired && player.peakPoints 
-                    ? (
-                      <span>
-                        <span className="text-gray-300">{player.points}</span>
-                        <span className="text-gray-500 mx-1">/</span>
-                        <span className="text-yellow-400">{player.peakPoints}</span>
-                        <span className="text-xs text-gray-500 ml-1">(Peak)</span>
+                
+                {nextBadge && pointsForNextBadge && !player.isRetired && (
+                  <div className="text-right">
+                    <div className="text-xs text-gray-400">Next Tier</div>
+                    <div className="flex items-center">
+                      <nextBadge.icon className="mr-1 text-xs" style={{ color: nextBadge.color }} />
+                      <span className="text-sm font-medium" style={{ color: nextBadge.color }}>
+                        {nextBadge.name}
                       </span>
-                    )
-                    : (
-                      <span className="text-purple-300">{player.points} 
-                        <span className="text-xs text-gray-500 ml-1">pts</span>
+                      <span className="text-xs text-gray-500 ml-1">
+                        ({pointsForNextBadge} pts needed)
                       </span>
-                    )
-                  }
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="relative h-3 bg-gray-900/80 rounded-full overflow-hidden mt-2 border border-gray-800/80">
+                <div 
+                  className="absolute inset-0 h-full rounded-full overflow-hidden bg-gray-800/50"
+                  style={{ 
+                    width: `${progress}%`,
+                    background: `linear-gradient(to right, ${getRankTierColor().color}, ${nextBadge ? nextBadge.color : getRankTierColor().color})`,
+                    boxShadow: `0 0 10px ${getRankTierColor().color}50`
+                  }}
+                >
+                  {/* Shimmer effect */}
+                  <div className="shimmer-effect absolute inset-0"></div>
+                </div>
+                
+                {/* Progress markers */}
+                <div className="absolute inset-0 flex items-center">
+                  {[0, 25, 50, 75, 100].map((marker) => (
+                    <div 
+                      key={marker} 
+                      className="absolute h-3 flex flex-col items-center justify-center"
+                      style={{ left: `${marker}%` }}
+                    >
+                      <div 
+                        className={`w-0.5 h-1.5 ${marker <= progress ? 'bg-white/70' : 'bg-gray-700/50'}`}
+                      ></div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <Progress 
-                value={progress} 
-                className="h-2.5 bg-gray-800" 
-              />
             </div>
           </div>
         </div>
