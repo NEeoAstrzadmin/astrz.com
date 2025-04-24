@@ -1,6 +1,13 @@
 import { users, players, playerMatchups, type User, type InsertUser, type Player, type InsertPlayer, type PlayerMatchup } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
+import createMemoryStore from "memorystore";
+
+const PostgresSessionStore = connectPg(session);
+const MemoryStore = createMemoryStore(session);
 
 // Helper function to reverse a match score (e.g. "3-2" becomes "2-3")
 function reverseScore(score: string): string {
@@ -38,9 +45,21 @@ export interface IStorage {
   // Player matchup methods
   getPlayerMatchups(playerId: number): Promise<PlayerMatchup[]>;
   getMatchupBetweenPlayers(playerId: number, opponentId: number): Promise<PlayerMatchup | undefined>;
+  
+  // Session store
+  sessionStore: session.Store;
 }
 
 export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+  
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
+  }
+  
   // User methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
