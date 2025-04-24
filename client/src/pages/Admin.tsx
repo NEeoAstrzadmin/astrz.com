@@ -9,7 +9,7 @@ import {
   fetchMatchupBetweenPlayers 
 } from "@/data/players";
 import { usePlayerContext } from "@/contexts/PlayerContext";
-import { FaCrown, FaUserEdit, FaTrash, FaArrowLeft, FaPlus, FaSave, FaUserCog, FaMagic, FaTrophy } from "react-icons/fa";
+import { FaCrown, FaUserEdit, FaTrash, FaArrowLeft, FaPlus, FaSave, FaUserCog, FaMagic, FaTrophy, FaSignOutAlt } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,12 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Admin() {
   const [, setLocation] = useLocation();
   const { activePlayers, retiredPlayers, refreshPlayers } = usePlayerContext();
+  const { logoutMutation } = useAuth();
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [newPlayerMode, setNewPlayerMode] = useState(false);
@@ -425,9 +427,21 @@ export default function Admin() {
             <FaUserCog className="mr-2 text-purple-400" />
             Admin Panel
           </h1>
-          <Link href="/" className="flex items-center text-gray-400 hover:text-white">
-            <FaArrowLeft className="mr-1" /> Back to Rankings
-          </Link>
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-gray-400 hover:text-white"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+            >
+              <FaSignOutAlt className="mr-2" /> 
+              {logoutMutation.isPending ? "Logging out..." : "Logout"}
+            </Button>
+            <Link href="/" className="flex items-center text-gray-400 hover:text-white">
+              <FaArrowLeft className="mr-1" /> Back to Rankings
+            </Link>
+          </div>
         </div>
       </header>
 
