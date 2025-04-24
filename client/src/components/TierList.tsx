@@ -248,90 +248,300 @@ export default function Leaderboard({ players }: LeaderboardProps) {
       </div>
 
       <div className="bg-gray-900/80 border border-purple-900/40 rounded-lg overflow-hidden shadow-xl backdrop-blur-sm">
-        <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/30 border-b border-purple-900/50 py-5 px-6">
-          <h2 className="text-2xl font-bold text-white flex items-center">
-            <span className="text-purple-400 mr-3 animate-bounce">
-              <FaCrown />
-            </span>
-            Astrz Combat Rankings
-          </h2>
-          <p className="text-gray-400 text-sm mt-1">Tracking the most competitive players in the Astrz universe</p>
+        <div className="relative py-6 px-6 overflow-hidden">
+          {/* Animated background elements */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900/40 to-indigo-900/20"></div>
+            <div className="absolute top-0 left-0 w-3 h-3 rounded-full bg-purple-500/50 animate-pulse" style={{left: '10%', top: '20%'}}></div>
+            <div className="absolute top-0 left-0 w-2 h-2 rounded-full bg-indigo-500/40 animate-pulse" style={{left: '25%', top: '60%', animationDelay: '0.5s'}}></div>
+            <div className="absolute top-0 left-0 w-4 h-4 rounded-full bg-blue-500/30 animate-pulse" style={{left: '70%', top: '30%', animationDelay: '1s'}}></div>
+            <div className="absolute top-0 left-0 w-40 h-40 rounded-full bg-gradient-to-r from-purple-600/10 to-indigo-600/5" style={{left: '-5%', top: '-50%'}}></div>
+            <div className="absolute bottom-0 right-0 w-60 h-60 rounded-full bg-gradient-to-r from-blue-600/10 to-purple-600/5" style={{right: '-10%', bottom: '-70%'}}></div>
+          </div>
+          
+          {/* Content with improved design */}
+          <div className="relative z-10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-3xl font-bold flex items-center">
+                  <span className="relative">
+                    <FaCrown className="text-yellow-400 mr-3 animate-pulse" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
+                  </span>
+                  <span className="bg-gradient-to-r from-purple-400 to-indigo-300 bg-clip-text text-transparent">
+                    Astrz Combat Rankings
+                  </span>
+                </h2>
+                <p className="text-gray-400 md:max-w-md mt-2">
+                  Tracking the most competitive players in the Astrz universe. Updated rankings, stats, and performance metrics for the elite combatants.
+                </p>
+              </div>
+              
+              <div className="mt-4 md:mt-0 flex items-center space-x-2">
+                <div className="bg-gray-800/80 px-3 py-2 rounded-lg border border-gray-700/50 flex items-center">
+                  <div className="text-xs text-gray-400 mr-2">Top Players</div>
+                  <div className="flex -space-x-2">
+                    {sortedByRank.slice(0, 3).map(player => (
+                      <div key={player.id} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-gray-800 flex items-center justify-center overflow-hidden" title={player.name}>
+                        <span className="text-xs font-bold">
+                          {player.name.substring(0, 1)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="bg-purple-900/30 flex items-center px-3 py-2 rounded-lg border border-purple-800/50">
+                  <FaTrophy className="text-yellow-400 mr-2" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-400">Total Matches</span>
+                    <span className="text-sm font-bold text-white">{players.reduce((sum, p) => sum + (p.wins || 0) + (p.losses || 0), 0)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-purple-900/30 flex flex-wrap gap-2">
+              {sortedByRank.slice(0, 5).map((player, index) => (
+                <div 
+                  key={player.id}
+                  className="px-2 py-1 rounded-md text-xs flex items-center bg-gray-800/60 border border-gray-700/50 hover:bg-gray-700/50 transition cursor-pointer"
+                  onClick={() => handlePlayerClick(player)}
+                >
+                  <span className={`w-4 h-4 flex items-center justify-center rounded-full mr-1.5 
+                    ${index === 0 ? "bg-yellow-500/20 text-yellow-400" : 
+                      index === 1 ? "bg-gray-400/20 text-gray-300" : 
+                      index === 2 ? "bg-amber-500/20 text-amber-400" : 
+                      "bg-purple-500/20 text-purple-400"}`}
+                  >
+                    {index + 1}
+                  </span>
+                  <span className="mr-1.5 font-medium">{player.name}</span>
+                  <span className="text-purple-400">{player.points} pts</span>
+                </div>
+              ))}
+              <div className="px-2 py-1 rounded-md text-xs flex items-center bg-purple-900/20 border border-purple-800/40 hover:bg-purple-800/30 transition cursor-pointer">
+                <FaInfoCircle className="mr-1 text-purple-400" />
+                <span>View more</span>
+              </div>
+            </div>
+          </div>
         </div>
         
         <Tabs defaultValue="overall" className="w-full">
-          <div className="bg-gray-800/80 backdrop-blur-sm">
-            <TabsList className="w-full rounded-none border-b border-gray-700 h-auto py-3 justify-center gap-1 px-4 bg-transparent">
+          <div className="bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-md">
+            <TabsList className="w-full rounded-none border-b border-gray-700/50 h-auto py-3 justify-center gap-2 px-4 bg-transparent">
               <TabsTrigger 
                 value="overall" 
-                className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+                className="relative overflow-hidden rounded-md 
+                  data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 
+                  data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border-purple-500/50 
+                  data-[state=active]:ring-2 data-[state=active]:ring-purple-500/20
+                  transition-all duration-300 transform hover:scale-105"
               >
-                <FaTrophy className="mr-2 text-yellow-500" /> Overall Rankings
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/5 opacity-0 data-[state=active]:opacity-100 transition-opacity"></div>
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 data-[state=active]:opacity-100"></div>
+                <div className="relative z-10 flex items-center">
+                  <FaTrophy className="mr-2 text-yellow-500" />
+                  <span>Overall Rankings</span>
+                  <div className="absolute -top-1 -right-1 w-1 h-1 rounded-full bg-purple-400/80 data-[state=active]:animate-ping hidden data-[state=active]:block"></div>
+                </div>
               </TabsTrigger>
+              
               <TabsTrigger 
                 value="kills" 
-                className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+                className="relative overflow-hidden rounded-md 
+                  data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-800 data-[state=active]:to-red-900 
+                  data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border-red-500/50 
+                  data-[state=active]:ring-2 data-[state=active]:ring-red-500/20
+                  transition-all duration-300 transform hover:scale-105"
               >
-                <FaSkull className="mr-2 text-red-500" /> Top Kills
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-500/5 opacity-0 data-[state=active]:opacity-100 transition-opacity"></div>
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/50 to-transparent opacity-0 data-[state=active]:opacity-100"></div>
+                <div className="relative z-10 flex items-center">
+                  <FaSkull className="mr-2 text-red-500" />
+                  <span>Top Kills</span>
+                  <div className="absolute -top-1 -right-1 w-1 h-1 rounded-full bg-red-400/80 data-[state=active]:animate-ping hidden data-[state=active]:block"></div>
+                </div>
               </TabsTrigger>
+              
               <TabsTrigger 
                 value="winstreak" 
-                className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+                className="relative overflow-hidden rounded-md 
+                  data-[state=active]:bg-gradient-to-br data-[state=active]:from-orange-700 data-[state=active]:to-orange-900 
+                  data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border-orange-500/50 
+                  data-[state=active]:ring-2 data-[state=active]:ring-orange-500/20
+                  transition-all duration-300 transform hover:scale-105"
               >
-                <FaFireAlt className="mr-2 text-orange-500" /> Win Streaks
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-orange-500/5 opacity-0 data-[state=active]:opacity-100 transition-opacity"></div>
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent opacity-0 data-[state=active]:opacity-100"></div>
+                <div className="relative z-10 flex items-center">
+                  <FaFireAlt className="mr-2 text-orange-500" />
+                  <span>Win Streaks</span>
+                  <div className="absolute -top-1 -right-1 w-1 h-1 rounded-full bg-orange-400/80 data-[state=active]:animate-ping hidden data-[state=active]:block"></div>
+                </div>
               </TabsTrigger>
+              
               <TabsTrigger 
                 value="retired" 
-                className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-700 data-[state=active]:to-purple-900 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+                className="relative overflow-hidden rounded-md 
+                  data-[state=active]:bg-gradient-to-br data-[state=active]:from-gray-700 data-[state=active]:to-gray-800 
+                  data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border-gray-500/50 
+                  data-[state=active]:ring-2 data-[state=active]:ring-gray-500/20
+                  transition-all duration-300 transform hover:scale-105"
               >
-                <FaUserTimes className="mr-2 text-gray-300" /> Hall of Fame
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-400/10 to-gray-400/5 opacity-0 data-[state=active]:opacity-100 transition-opacity"></div>
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gray-500/50 to-transparent opacity-0 data-[state=active]:opacity-100"></div>
+                <div className="relative z-10 flex items-center">
+                  <FaUserTimes className="mr-2 text-gray-300" />
+                  <span>Hall of Fame</span>
+                  <div className="absolute -top-1 -right-1 w-1 h-1 rounded-full bg-gray-400/80 data-[state=active]:animate-ping hidden data-[state=active]:block"></div>
+                </div>
               </TabsTrigger>
             </TabsList>
+            
+            {/* Tab stats counts */}
+            <div className="flex justify-center gap-2 py-2 text-xs text-gray-500 border-b border-gray-700/50">
+              <div className="px-2">{sortedByRank.length} Active Players</div>
+              <div className="border-r border-gray-700/50"></div>
+              <div className="px-2">{sortedByKills.length} Kill Leaders</div>
+              <div className="border-r border-gray-700/50"></div>
+              <div className="px-2">{sortedByWinStreak.filter(p => (p.winStreak || 0) > 0).length} Streak Holders</div>
+              <div className="border-r border-gray-700/50"></div>
+              <div className="px-2">{retiredPlayers.length} Legends</div>
+            </div>
           </div>
 
           {/* Rank Tiers Legend */}
-          <div className="flex flex-wrap justify-center p-3 border-b border-gray-800 gap-4 bg-gray-900/60">
-            <TooltipProvider>
-              {badges.map((badge) => (
-                <Tooltip key={badge.id}>
-                  <TooltipTrigger asChild>
-                    <div 
-                      className="flex items-center hover:scale-110 transition-transform cursor-help bg-gray-900 px-2 py-1 rounded-lg"
-                      style={{ 
-                        color: badge.color,
-                        borderLeft: `2px solid ${badge.color}`,
-                        boxShadow: `0 0 10px ${badge.color}30`
-                      }}
-                    >
-                      <badge.icon className="mr-1.5 text-xs" />
-                      <span className="text-xs font-medium">{badge.name}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="bg-gray-900 border border-purple-900/50">
-                    <p className="text-xs font-medium">{badge.name}</p>
-                    <p className="text-xs opacity-80">{badge.description}</p>
-                    <p className="text-xs mt-1">Min. points: {badge.pointThreshold}+</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div 
-                    className="flex items-center hover:scale-110 transition-transform cursor-help bg-gray-900 px-2 py-1 rounded-lg"
-                    style={{ 
-                      color: retiredBadge.color,
-                      borderLeft: `2px solid ${retiredBadge.color}`,
-                      boxShadow: `0 0 10px ${retiredBadge.color}30`
-                    }}
-                  >
-                    <retiredBadge.icon className="mr-1.5 text-xs" />
-                    <span className="text-xs font-medium">Retired Legend</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-gray-900 border border-purple-900/50">
-                  <p className="text-xs">{retiredBadge.description}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          <div className="bg-gray-900/60 backdrop-blur-sm border-b border-gray-800">
+            <div className="flex flex-col py-3">
+              <div className="text-xs text-gray-400 uppercase tracking-wider text-center mb-2 font-semibold">
+                Combat Rank Tiers
+              </div>
+              
+              <div className="flex flex-wrap justify-center gap-2 px-2">
+                <TooltipProvider>
+                  {badges.map((badge) => (
+                    <Tooltip key={badge.id}>
+                      <TooltipTrigger asChild>
+                        <div 
+                          className="flex items-center hover:scale-110 transition-all duration-300 cursor-help rounded-lg shadow-md overflow-hidden border border-gray-800"
+                          style={{ 
+                            background: `linear-gradient(to right, ${badge.color}15, ${badge.color}05)`,
+                          }}
+                        >
+                          <div 
+                            className="w-1.5 h-full" 
+                            style={{ 
+                              background: badge.color,
+                              boxShadow: `0 0 8px ${badge.color}`
+                            }}
+                          ></div>
+                          <div className="flex items-center px-2 py-1.5">
+                            <badge.icon 
+                              className="mr-1.5 text-xs" 
+                              style={{ color: badge.color }} 
+                            />
+                            <span 
+                              className="text-xs font-medium"
+                              style={{ color: badge.color }}
+                            >
+                              {badge.name}
+                            </span>
+                            <div 
+                              className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                              style={{ 
+                                background: `${badge.color}20`,
+                                color: badge.color 
+                              }}
+                            >
+                              {badge.pointThreshold}+
+                            </div>
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="bg-gray-900 border border-purple-900/50 p-3">
+                        <div 
+                          className="text-sm font-bold mb-1"
+                          style={{ color: badge.color }}
+                        >
+                          {badge.name}
+                        </div>
+                        <p className="text-xs opacity-80">{badge.description}</p>
+                        <div className="mt-2 pt-2 border-t border-gray-800 flex justify-between">
+                          <span className="text-xs text-gray-400">Minimum points:</span>
+                          <span 
+                            className="text-xs font-bold"
+                            style={{ color: badge.color }}
+                          >
+                            {badge.pointThreshold}+
+                          </span>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                  
+                  {/* Retired legend badge */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div 
+                        className="flex items-center hover:scale-110 transition-all duration-300 cursor-help rounded-lg shadow-md overflow-hidden border border-gray-800"
+                        style={{ 
+                          background: `linear-gradient(to right, ${retiredBadge.color}15, ${retiredBadge.color}05)`,
+                        }}
+                      >
+                        <div 
+                          className="w-1.5 h-full" 
+                          style={{ 
+                            background: retiredBadge.color,
+                            boxShadow: `0 0 8px ${retiredBadge.color}`
+                          }}
+                        ></div>
+                        <div className="flex items-center px-2 py-1.5">
+                          <retiredBadge.icon 
+                            className="mr-1.5 text-xs" 
+                            style={{ color: retiredBadge.color }} 
+                          />
+                          <span 
+                            className="text-xs font-medium"
+                            style={{ color: retiredBadge.color }}
+                          >
+                            Retired Legend
+                          </span>
+                          <div 
+                            className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                            style={{ 
+                              background: `${retiredBadge.color}20`,
+                              color: retiredBadge.color 
+                            }}
+                          >
+                            HOF
+                          </div>
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="bg-gray-900 border border-purple-900/50 p-3">
+                      <div 
+                        className="text-sm font-bold mb-1"
+                        style={{ color: retiredBadge.color }}
+                      >
+                        Retired Legend
+                      </div>
+                      <p className="text-xs opacity-80">{retiredBadge.description}</p>
+                      <div className="mt-2 pt-2 border-t border-gray-800 flex justify-between">
+                        <span className="text-xs text-gray-400">Hall of Fame</span>
+                        <span 
+                          className="text-xs font-bold"
+                          style={{ color: retiredBadge.color }}
+                        >
+                          Lifetime Achievement
+                        </span>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
           </div>
         
           {/* Overall Rankings Tab */}
